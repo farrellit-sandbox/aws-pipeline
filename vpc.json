@@ -1,0 +1,73 @@
+{
+  "Parameters": { 
+    "VpcCidrBlock": { "Type": "String", "Description": "Cidr for the entire VPC" },
+    "Zone1ExternalCidr": { "Type": "String", "Description": "Cidr for zone 1 external subnet" },
+    "Zone1InternalCidr": { "Type": "String", "Description": "Cidr for zone 1 internal subnet" },
+    "Zone1AZ": { "Type": "String", "Description": "Letter of the AZ for zone 1" },
+    "Zone2ExternalCidr": { "Type": "String", "Description": "Cidr for zone 2 external subnet", "Default": "" },
+    "Zone2InternalCidr": { "Type": "String", "Description": "Cidr for zone 2 internal subnet", "Default": "" },
+    "Zone2AZ": { "Type": "String", "Description": "Letter of the AZ for zone 2", "Default": "" },
+    "Zone3ExternalCidr": { "Type": "String", "Description": "Cidr for zone 3 external subnet", "Default": "" },
+    "Zone3InternalCidr": { "Type": "String", "Description": "Cidr for zone 3 internal subnet", "Default": "" },
+    "Zone3AZ": { "Type": "String", "Description": "Letter of the AZ for zone 3", "Default": "" },
+    "Zone4ExternalCidr": { "Type": "String", "Description": "Cidr for zone 4 external subnet", "Default": "" },
+    "Zone4InternalCidr": { "Type": "String", "Description": "Cidr for zone 4 internal subnet", "Default": "" },
+    "Zone4AZ": { "Type": "String", "Description": "Letter of the AZ for zone 4", "Default": "" },
+    "Zone5ExternalCidr": { "Type": "String", "Description": "Cidr for zone 5 external subnet", "Default": "" },
+    "Zone5InternalCidr": { "Type": "String", "Description": "Cidr for zone 5 internal subnet", "Default": "" },
+    "Zone5AZ": { "Type": "String", "Description": "Letter of the AZ for zone 5", "Default": "" },
+    "Zone6ExternalCidr": { "Type": "String", "Description": "Cidr for zone 6 external subnet", "Default": "" },
+    "Zone6InternalCidr": { "Type": "String", "Description": "Cidr for zone 6 internal subnet", "Default": "" },
+    "Zone6AZ": { "Type": "String", "Description": "Letter of the AZ for zone 6", "Default": "" },
+    "NetworkName": { "Type": "String" },
+    "Environment": { "Type": "String" },
+    "Production": { "Type": "String", "Default": "False" , "Description": "Set to True for production readiness" }
+  },
+  "Conditions": {
+    "IsProduction": { "Fn::StringEquals": [ { "Ref": "Production" }, "True" ] }
+  },
+  "Resources": {
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway"
+    },
+    "VPC": { 
+      "Type": "AWS::EC2::VPC",
+      "DependsOn": "InternetGateway",
+      "Properties": {
+        "CidrBlock": { "Ref": "VPCCidrBlock" },
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "Tags": [
+          { "Key": "network", "Value": { "Ref": "NetworkName" } },
+          { "Key": "environment", "Value": { "Ref": "Environment" } },
+          { 
+            "Key": "Name", 
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "NetworkName" }, { "Ref": "Environment" } ] ] }
+          }
+        ]
+      }
+    },
+    "InternetGatewayAttachment": {
+      "Properties": {
+        "InternetGatewayId": { "Ref": "InternetGateway" },
+        "VpcId": { "Ref": "VPC" }
+      },
+      "Type": "AWS::EC2::VPCGatewayAttachment"
+    },
+    "ExternalDefaultRoute": {
+      "DependsOn": "InternetGatewayAttachment",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": { "Ref": "InternetGateway" },
+        "RouteTableId": { "Ref": "ExternalRouteTable" }
+      },
+      "Type": "AWS::EC2::Route"
+    },
+    "ExternalRouteTable": {
+      "Properties": {
+        "VpcId": { "Ref": "VPC" } 
+      },
+      "Type": "AWS::EC2::RouteTable"
+    }
+  }
+}

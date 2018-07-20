@@ -1,0 +1,11 @@
+version: 0.2
+phases:
+  install: 
+    commands:
+    - echo $BUCKET
+  build:
+    commands:
+    - python -mjson.tool < stack.json
+artifacts:
+  files:
+  - stack.json
