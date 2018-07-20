@@ -7,17 +7,18 @@
       "IsSingletonRegion" : {"Fn::Equals" : [{"Ref" : "AWS::Region"}, { "Ref": "SingletonRegion" } ] }
    },
    "Resources":{
-      "UserAcctMgmtGroup":{
+      "StandardUsers":{
          "Type":"AWS::IAM::Group",
          "Properties":{
-            "Path":"/users/std/",
-            "GroupName":"UserAcctMgmt"
+            "Path":"/users/",
+            "GroupName":"StandardUsers"
          }
       },
       "UserAcctMgmtPolicy": {
          "Type": "AWS::IAM::ManagedPolicy",
          "Properties": {
             "Path": "/users/std/",
+            "ManagedPolicyName": "UserAcctMgmt",
             "PolicyDocument": {
                "Version" : "2012-10-17",
                "Statement": [
@@ -64,7 +65,32 @@
                  }
               ]
             },
-            "Groups":[{"Ref":"UserAcctMgmtGroup"}]
+            "Groups":[{"Ref":"StandardUsers"}]
+         }
+      },
+      "ReadResourcesPolicy": {
+         "Type": "AWS::IAM::ManagedPolicy",
+         "Properties": {
+            "Path": "/ro/",
+            "ManagedPolicyName": "ReadResources",
+            "PolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [
+                 {
+                     "Sid": "ReadResources",
+                     "Effect": "Allow",
+                     "Action":[
+                         "ec2:Get*",
+                         "ec2:Describe*",
+                         "iam:Get*",
+                         "iam:Describe*",
+                         "cloudwatch:Get"
+                     ],
+                     "Resource": "*"
+                 }
+              ]
+            },
+            "Groups":[{"Ref":"StandardUsers"}]
          }
       }
     }
