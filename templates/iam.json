@@ -1,0 +1,97 @@
+{
+   "AWSTemplateFormatVersion":"2010-09-09",
+   "Parameters": { 
+    "SingletonRegion": { "Type": "String", "Default": "us-west-2" }
+   },
+   "Conditions" : {
+      "IsSingletonRegion" : {"Fn::Equals" : [{"Ref" : "AWS::Region"}, { "Ref": "SingletonRegion" } ] }
+   },
+   "Resources":{
+      "StandardUsers":{
+         "Type":"AWS::IAM::Group",
+         "Properties":{
+            "Path":"/users/",
+            "GroupName":"StandardUsers"
+         }
+      },
+      "UserAcctMgmtPolicy": {
+         "Type": "AWS::IAM::ManagedPolicy",
+         "Properties": {
+            "Path": "/users/std/",
+            "ManagedPolicyName": "UserAcctMgmt",
+            "PolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [
+                 {
+                     "Sid": "IAMConsoleAccess",
+                     "Effect": "Allow",
+                     "Action":[
+                         "iam:List*",
+                         "iam:GetAccount*"
+                     ],
+                     "Resource": "*"
+                 },
+                 {
+                     "Sid": "ManageOwnAccountSecurity",
+                     "Effect": "Allow",
+                     "Action":[
+                         "iam:DeleteAccessKey",
+                         "iam:GetLoginProfile",
+                         "iam:ListAccessKeys",
+                         "iam:UpdateAccessKey",
+                         "iam:CreateVirtualMFADevice",        
+                         "iam:EnableMFADevice",        
+                         "iam:ResyncMFADevice"
+                     ],
+                     "Resource": [ 
+                        { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:user/${!aws:username}" },
+                        { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:mfa/${!aws:username}" }
+                     ]
+                 },
+                 {
+                     "Sid": "AllowKeysWithMFA",
+                     "Effect": "Allow",     
+                     "Action":[  
+                         "iam:DeleteVirtualMFADevice",               
+                         "iam:DeactivateMFADevice",
+                         "iam:CreateAccessKey",
+                         "iam:ChangePassword"
+                     ],  
+                     "Resource":[        
+                        { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:user/${!aws:username}" },
+                        { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:mfa/${!aws:username}" }
+                     ],
+                     "Condition":{ "Bool": { "aws:MultiFactorAuthPresent": "true" } }
+                 }
+              ]
+            },
+            "Groups":[{"Ref":"StandardUsers"}]
+         }
+      },
+      "ReadResourcesPolicy": {
+         "Type": "AWS::IAM::ManagedPolicy",
+         "Properties": {
+            "Path": "/ro/",
+            "ManagedPolicyName": "ReadResources",
+            "PolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [
+                 {
+                     "Sid": "ReadResources",
+                     "Effect": "Allow",
+                     "Action":[
+                         "ec2:Get*",
+                         "ec2:Describe*",
+                         "iam:Get*",
+                         "iam:Describe*",
+                         "cloudwatch:Get"
+                     ],
+                     "Resource": "*"
+                 }
+              ]
+            },
+            "Groups":[{"Ref":"StandardUsers"}]
+         }
+      }
+    }
+}

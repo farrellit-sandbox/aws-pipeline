@@ -1,0 +1,203 @@
+{
+  "Parameters" : {
+    "GitHubOAUTHToken": { "Type": "String" },
+    "ProjectName": {"Type": "String", "Description": "Used for naming all the various parts" },
+    "GithubOwner":  { "Type": "String", "Description": "Github user or org" },
+    "GithubRepo":  { "Type": "String", "Description": "Github repo name" },
+    "GithubBranch":  { "Type": "String", "Description": "Github branch name which autodeploys here ... would like to add gated, remote prod deploy with template diff and exec set" },
+    "RepoBuildspecPath": {"Type": "String", "Description": "location of buildspec .yaml", "Default": "buildspec.yml" },
+    "BuildOutputStackTemplatePath": {"Type": "String", "Description": "location of stack in output artifact, if any", "Default": "stack.json" }
+  },
+   "Resources":{
+      "Bucket": {
+          "Type": "AWS::S3::Bucket"
+      },
+       "CodeBuildProject": {
+         "Type": "AWS::CodeBuild::Project",
+         "Properties": {
+           "Name": { "Ref": "ProjectName" }, 
+           "ServiceRole": { "Fn::GetAtt": [ "BuildRole", "Arn" ] },
+           "Artifacts": {
+             "Type": "CODEPIPELINE"
+           },
+           "Environment": {
+             "Type": "linuxContainer",
+             "ComputeType": "BUILD_GENERAL1_SMALL",
+             "Image": "aws/codebuild/ubuntu-base:14.04",
+             "EnvironmentVariables": [ 
+               {
+                 "Name": "BUCKET", 
+                 "Type": "PLAINTEXT",
+                 "Value": { "Ref": "Bucket" }
+               }
+             ]
+           },
+           "Source": {
+             "Type":"CODEPIPELINE",
+             "BuildSpec":  { "Ref": "RepoBuildspecPath" }
+          },
+           "TimeoutInMinutes": 10,
+           "Tags" : [
+            { "Key": "project", "Value": { "Ref": "ProjectName" } }
+           ]
+         }
+       },
+       "BuildRole": {
+             "Type": "AWS::IAM::Role",
+             "Properties": {
+               "Path": "/devops/delivery/",
+               "AssumeRolePolicyDocument": {
+                 "Version": "2012-10-17",
+                 "Statement": [
+                   {
+                     "Effect": "Allow",
+                     "Principal": { "Service": "codebuild.amazonaws.com" },
+                     "Action": "sts:AssumeRole"
+                   }
+                 ]
+               },
+               "Policies": [
+                 {
+                   "PolicyName": "BuildPolicy",
+                   "PolicyDocument": {
+                     "Version": "2012-10-17",
+                     "Statement": [
+                       {
+                         "Sid": "CloudWatchLogsPolicy",
+                         "Effect": "Allow",
+                         "Action": [
+                           "logs:CreateLogGroup",
+                           "logs:CreateLogStream",
+                           "logs:PutLogEvents"
+                         ],
+                         "Resource": [ "*" ]
+                       },
+                       {
+                         "Sid": "cloudformationpolicy",
+                         "Effect": "Allow",
+                         "Action": [
+                           "cloudformation:*"
+                         ],
+                         "Resource": [ "*" ]
+                       },
+                       {
+                         "Sid": "S3GetObjectPolicy",
+                         "Effect": "Allow",
+                         "Action": [
+                           "s3:GetObject",
+                           "s3:GetObjectVersion"
+                         ],
+                         "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "Bucket", "Arn" ]  }, "/*" ] ] } 
+                       },
+                       {
+                         "Sid": "S3PutObjectPolicy",
+                         "Effect": "Allow",
+                         "Action": [
+                           "s3:PutObject"
+                         ],
+                         "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "Bucket", "Arn" ]  }, "/*" ] ] } 
+                       }
+                     ]
+                   }
+                 }
+               ]
+             }
+           },
+      "DeployPipeline":{
+        "Type":"AWS::CodePipeline::Pipeline",
+        "Properties":{
+          "Name": {"Ref": "ProjectName" },
+          "RoleArn": {"Fn::GetAtt" : [ "BuildRole", "Arn" ] },
+            "Stages":[
+              {
+                "Name":"Source",
+                "Actions":[
+                  {
+                    "InputArtifacts":[],
+                    "Name":"GithubSource",
+                    "ActionTypeId":{
+                      "Category":"Source",
+                      "Owner":"ThirdParty",
+                      "Version":"1",
+                      "Provider":"GitHub"
+                    },
+                    "OutputArtifacts":[
+                      {
+                        "Name":"GithubArtifact"
+                      }
+                    ],
+                    "Configuration":{
+                      "Owner": { "Ref": "GithubOwner" },
+                      "Repo": { "Ref": "GithubRepo" },
+                      "Branch": { "Ref": "GithubBranch" },
+                      "OAuthToken":{ "Ref": "GitHubOAUTHToken" }
+                    },
+                    "RunOrder":1
+                  }
+                ]
+              },
+              {
+                "Name":"Build",
+                "Actions":[
+                  {
+                    "InputArtifacts":[
+                      {
+                        "Name":"GithubArtifact"
+                      }
+                    ],
+                    "Name":"ProjectBuild",
+                    "ActionTypeId":{
+                      "Category":"Build",
+                      "Owner":"AWS",
+                      "Version":"1",
+                      "Provider":"CodeBuild"
+                    },
+                    "OutputArtifacts":[{"Name":"BuildOutput"}],
+                    "Configuration":{
+                      "ProjectName":{"Ref":"CodeBuildProject"}
+                    },
+                    "RunOrder":1
+                  }
+                ]
+              },
+              {
+                "Name":"Deploy",
+                "Actions":[
+                  {
+                    "InputArtifacts":[
+                      {
+                        "Name":"BuildOutput"
+                      },
+                      {
+                        "Name":"GithubArtifact"
+                      }
+                    ],
+                    "Name": { "Fn::Sub": "${ProjectName}CloudFormationDeploy" },
+                    "ActionTypeId":{
+                      "Category":"Deploy",
+                      "Owner":"AWS",
+                      "Version":"1",
+                      "Provider":"CloudFormation"
+                    },
+                    "OutputArtifacts":[],
+                    "Configuration":{
+                      "StackName": { "Ref": "ProjectName" },
+                      "ActionMode": "CREATE_UPDATE",
+                      "RoleArn": { "Fn::GetAtt": [ "BuildRole", "Arn" ] },
+                      "Capabilities":"CAPABILITY_IAM",
+                      "TemplatePath": { "Fn::Sub": "BuildOutput::${BuildOutputStackTemplatePath}" }
+                    },
+                    "RunOrder":1
+                  }
+                ]
+              }
+            ],
+            "ArtifactStore":{
+              "Type":"S3",
+              "Location": { "Ref": "Bucket" }
+          }
+        }
+
+      }
+    }
+}

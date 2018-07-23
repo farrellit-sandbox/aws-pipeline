@@ -1,0 +1,138 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "DiscoverRepository": {
+            "Default": "vpndiscovery",
+            "Description": "The name of the ECR image to pull out of this account/region's ECR",
+            "Type": "String"
+        },
+        "ApplicationName": { "Type": "String", "Description": "For classification purposes" },
+        "Environment": { "Type": "String", "Description": "For classification purposes" }
+    },
+    "Resources": {
+        "ApplicationASG": {
+            "Properties": {
+                "Cooldown": "90",
+                "DesiredCapacity": "1",
+                "HealthCheckGracePeriod": "90",
+                "HealthCheckType": "ELB",
+                "LaunchConfigurationName": {
+                    "Ref": "PingTargetLaunchConfig"
+                },
+                "MaxSize": "2",
+                "MinSize": "1",
+                "Tags": [
+                    {
+                        "Key": "app",
+                        "PropagateAtLaunch": true,
+                        "Value": { "Ref": "ApplicationName" }
+                    },
+                    {
+                        "Key": "environment",
+                        "PropagateAtLaunch": true,
+                        "Value": { "Ref": "Environment" }
+                    }
+                ],
+                "VPCZoneIdentifier": { "Ref": "AppSubnets" }
+            },
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "UpdatePolicy": {
+                "AutoScalingRollingUpdate": {
+                    "MaxBatchSize": 1,
+                    "MinInstancesInService": 1,
+                    "PauseTime": "PT5M",
+                    "SuspendProcesses": [
+                        "HealthCheck",
+                        "ReplaceUnhealthy",
+                        "AZRebalance",
+                        "AlarmNotification",
+                        "ScheduledActions"
+                    ],
+                    "WaitOnResourceSignals": true
+                }
+            }
+        },
+        "LaunchConfig": {
+            "Properties": {
+                "IamInstanceProfile": { "Ref": "ApplicationProfile" },
+                "ImageId": { "Ref": "AppAMI" },
+                "InstanceType":  { "Ref": "ImageType" },
+                "KeyName": { "Ref": "KeyName" },
+                "SecurityGroups":  { "Ref": "AppSecurityGroups" },
+                "UserData": { "Ref": "see user-data.json - but this is a key integration point" }
+            },
+            "Type": "AWS::AutoScaling::LaunchConfiguration"
+        },
+        "ApplicationProfile": {
+            "Properties": {
+                "Path": "/monitoring/network/",
+                "Roles": [ { "Ref": "ApplicationRole" } ]
+            },
+            "Type": "AWS::IAM::InstanceProfile"
+        },
+        "ApplcationRole": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [ "sts:AssumeRole" ],
+                            "Condition": { "Bool": { "aws:MultiFactorAuthPresent": "true" } },
+                            "Effect": "Allow",
+                            "Principal": { "AWS": { "Ref": "AWS::AccountId" } }
+                        },
+                        {
+                            "Action": [ "sts:AssumeRole" ],
+                            "Effect": "Allow",
+                            "Principal": { "Service": [ "ec2.amazonaws.com" ] }
+                        },
+                        {
+                            "Action": [ "sts:AssumeRole" ],
+                            "Condition": { "Bool": { "aws:MultiFactorAuthPresent": "true" } },
+                            "Effect": "Allow",
+                            "Principal": { "AWS": { "Ref": "AWS::AccountId" } }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "Path": "/app/${Environment}/${ApplicationName}/",
+                "Policies": [
+                    {
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "ecr:GetAuthorizationToken"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Action": [
+                                        "ecr:BatchCheckLayerAvailability",
+                                        "ecr:BatchGetImage",
+                                        "ecr:GetDownloadUrlForLayer"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": [ { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${DiscoverRepository}" }
+                                    ]
+                                },
+                                {
+                                    "Action": [
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents",
+                                        "logs:DescribeLogStreams"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": [ { "Ref": "LogGroupArn" } ]
+                                }
+                            ],
+                            "Version": "2012-10-17"
+                        },
+                        "PolicyName": "app-platform-policy"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Role"
+        }
+    }
+}
