@@ -1,4 +1,11 @@
 # run this with the proper keys!
+
+test: build-test
+	docker run --rm -v `pwd`:/code test-publish-templates
+
+build-test:
+	docker build -t test-publish-templates -f Dockerfile.pytest .
+
 iam_stack_name = "IamMgmt"
 
 interim-users: 

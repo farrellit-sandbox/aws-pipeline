@@ -5,7 +5,8 @@ phases:
     - echo $BUCKET
   build:
     commands:
-    - python -mjson.tool < stack.json
+    # find file:// references and publish to bucket
+
 artifacts:
   files:
   - stack.json

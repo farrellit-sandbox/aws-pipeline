@@ -1,0 +1,7 @@
+FROM python:alpine
+RUN pip install --upgrade pip
+RUN pip install boto3 pytest
+RUN mkdir -p /code
+WORKDIR /code
+ENTRYPOINT [ "/usr/local/bin/pytest" ]
+CMD [ "-s" ]
