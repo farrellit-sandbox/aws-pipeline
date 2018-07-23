@@ -5,6 +5,7 @@ class FileUrlReplacer:
     self.entrypoint=kwargs['entrypoint']
     self.bucket = kwargs['bucket']
     self.region = kwargs['region']
+    self.output = kwargs['output']
     self.client = boto3.client('s3', region_name=self.region)
     self.dryrun = bool(kwargs.get('dryrun', False))
   def PublishFile(self,**kwargs):
@@ -30,8 +31,11 @@ class FileUrlReplacer:
       hostname = 's3-{region}'.format(region=self.region)
     return "https://{hostname}.amazonaws.com/{bucket}/{s3path}".format(hostname=hostname,bucket=self.bucket,s3path=s3path)
 
-  def NormalizeJson(self, data):
-    return json.dumps(data,separators=(",",":"),indent=None).encode("utf-8")
+  def NormalizeJson(self, data, **kwargs):
+    result = json.dumps(data,separators=(",",":"),indent=None)
+    if kwargs.get('encode', True):
+      result = result.encode("utf-8")
+    return result
   
   def ReplaceFileUrls(self, **kwargs):
     if kwargs.get('path'):
@@ -41,7 +45,7 @@ class FileUrlReplacer:
       data = kwargs['data']
       assert isinstance(data,dict)
     else:
-      raise Exception("ReplaceFileUrls: either path or data named argument must be present")
+      return self.ReplaceFileUrls(path=self.entrypoint,output=self.output)
     for k,v in list(data.items()):
       if isinstance(v, dict): # recrsively update sub-dictionaries
         data[k] = self.ReplaceFileUrls(data=v) 
@@ -55,8 +59,11 @@ class FileUrlReplacer:
           s3url = self.PublishFile(path=path,data=subdata)
           data[k] = s3url
     # now the entire data structure is replaced recursively
+    if kwargs.get('output'):
+      with open(kwargs['output'],'w') as f:
+        f.write(self.NormalizeJson(data,encode=False))
     return data
 
 if __name__ == "__main__":
-  fur = FileUrlReplacer(bucket=os.environ['BUCKET'], entrypoint=os.environ['ENTRYPOINT'])
-  
+  fur = FileUrlReplacer(bucket=os.environ['BUCKET'], entrypoint=os.environ['ENTRYPOINT'], output=os.environ['OUTPUT'])
+  result = fur.ReplaceFileUrls()
