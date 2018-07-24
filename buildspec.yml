@@ -2,11 +2,12 @@ version: 0.2
 phases:
   install: 
     commands:
-    - echo $BUCKET
+    - pip install --upgrade pip
+    - pip install boto3
   build:
     commands:
-    # find file:// references and publish to bucket
-
+    - "which python3 || which python && python --version"
+    - OUTPUT="../cooked-stack.json" python ./publish_templates.py
 artifacts:
   files:
-  - stack.json
+  - cooked-stack.json

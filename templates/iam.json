@@ -1,13 +1,14 @@
 {
    "AWSTemplateFormatVersion":"2010-09-09",
    "Parameters": { 
-    "SingletonRegion": { "Type": "String", "Default": "us-west-2" }
+    "SingletonRegion": { "Type": "String", "Default": "us-east-2" }
    },
    "Conditions" : {
       "IsSingletonRegion" : {"Fn::Equals" : [{"Ref" : "AWS::Region"}, { "Ref": "SingletonRegion" } ] }
    },
    "Resources":{
       "StandardUsers":{
+         "Condition": "SingletonRegion",
          "Type":"AWS::IAM::Group",
          "Properties":{
             "Path":"/users/",
@@ -15,6 +16,7 @@
          }
       },
       "UserAcctMgmtPolicy": {
+         "Condition": "SingletonRegion",
          "Type": "AWS::IAM::ManagedPolicy",
          "Properties": {
             "Path": "/users/std/",
@@ -69,6 +71,7 @@
          }
       },
       "ReadResourcesPolicy": {
+         "Condition": "SingletonRegion",
          "Type": "AWS::IAM::ManagedPolicy",
          "Properties": {
             "Path": "/ro/",

@@ -1,12 +1,15 @@
 {
   "Parameters" : {
-    "GitHubOAUTHToken": { "Type": "String" },
+    "GitHubOAUTHToken": { "Type": "AWS::SSM::Parameter::Value<String>" , "Default": "/deployment/github/oauth", "NoEcho": "true" },
     "ProjectName": {"Type": "String", "Description": "Used for naming all the various parts" },
     "GithubOwner":  { "Type": "String", "Description": "Github user or org" },
     "GithubRepo":  { "Type": "String", "Description": "Github repo name" },
     "GithubBranch":  { "Type": "String", "Description": "Github branch name which autodeploys here ... would like to add gated, remote prod deploy with template diff and exec set" },
     "RepoBuildspecPath": {"Type": "String", "Description": "location of buildspec .yaml", "Default": "buildspec.yml" },
-    "BuildOutputStackTemplatePath": {"Type": "String", "Description": "location of stack in output artifact, if any", "Default": "stack.json" }
+    "BuildOutputStackTemplatePath": {"Type": "String", "Description": "location of stack in output artifact, if any", "Default": "cooked-stack.json" },
+    "SiteTemplate": { "Type": "String", "Description": "The place to start ( it would call other stacks from other templates, setting parameters)" },
+    "SiteConfigurationPath": { "Type": "String", "Description": "Configuration for the site template" },
+    "PipelineTemplateConfigurationPath": { "Type": "String", "Description": "Where are the configurations for this template stored?" }
   },
    "Resources":{
       "Bucket": {
@@ -29,6 +32,11 @@
                  "Name": "BUCKET", 
                  "Type": "PLAINTEXT",
                  "Value": { "Ref": "Bucket" }
+               },
+               {
+                 "Name": "ENTRYPOINT", 
+                 "Type": "PLAINTEXT",
+                 "Value": { "Ref": "SiteTemplate" }
                }
              ]
            },
@@ -106,7 +114,7 @@
       "DeployPipeline":{
         "Type":"AWS::CodePipeline::Pipeline",
         "Properties":{
-          "Name": {"Ref": "ProjectName" },
+          "Name": { "Fn::Sub": "${ProjectName}-pipeline" },
           "RoleArn": {"Fn::GetAtt" : [ "BuildRole", "Arn" ] },
             "Stages":[
               {
@@ -131,6 +139,35 @@
                       "Repo": { "Ref": "GithubRepo" },
                       "Branch": { "Ref": "GithubBranch" },
                       "OAuthToken":{ "Ref": "GitHubOAUTHToken" }
+                    },
+                    "RunOrder":1
+                  }
+                ]
+              },
+              {
+                "Name":"SelfDeployPipeline",
+                "Actions":[
+                  {
+                    "InputArtifacts":[
+                      {
+                        "Name":"GithubArtifact"
+                      }
+                    ],
+                    "Name": { "Fn::Sub": "${ProjectName}PipelineDeploy" },
+                    "ActionTypeId":{
+                      "Category":"Deploy",
+                      "Owner":"AWS",
+                      "Version":"1",
+                      "Provider":"CloudFormation"
+                    },
+                    "OutputArtifacts":[],
+                    "Configuration":{
+                      "StackName": {"Fn::Sub": "${ProjectName}-Pipeline" },
+                      "ActionMode": "REPLACE_ON_FAILURE",
+                      "RoleArn": { "Fn::GetAtt": [ "BuildRole", "Arn" ] },
+                      "Capabilities":"CAPABILITY_IAM",
+                      "TemplateConfiguration": { "Fn::Sub": "GithubArtifact::${PipelineTemplateConfigurationPath}" },
+                      "TemplatePath": "GithubArtifact::templates/pipeline.json"
                     },
                     "RunOrder":1
                   }
@@ -182,10 +219,11 @@
                     "OutputArtifacts":[],
                     "Configuration":{
                       "StackName": { "Ref": "ProjectName" },
-                      "ActionMode": "CREATE_UPDATE",
+                      "ActionMode": "REPLACE_ON_FAILURE",
                       "RoleArn": { "Fn::GetAtt": [ "BuildRole", "Arn" ] },
-                      "Capabilities":"CAPABILITY_IAM",
-                      "TemplatePath": { "Fn::Sub": "BuildOutput::${BuildOutputStackTemplatePath}" }
+                      "Capabilities":[ "CAPABILITY_IAM", "CAPABILITY_NAMED_IAM" ],
+                      "TemplatePath": { "Fn::Sub": "BuildOutput::${BuildOutputStackTemplatePath}" },
+                      "TemplateConfiguration": { "Fn::Sub": "GithubArtifact::${SiteConfigurationPath}" }
                     },
                     "RunOrder":1
                   }

@@ -1,0 +1,65 @@
+{ 
+  "Parameters": {
+    "VpcCidrBlock": { "Type": "String" },
+    "Zone1ExternalCidr": { "Type": "String" },
+    "Zone1InternalCidr": { "Type": "String" },
+    "Zone1AZ": { "Type": "String" },
+    "Zone2ExternalCidr": { "Type": "String" },
+    "Zone2InternalCidr": { "Type": "String" },
+    "Zone2AZ": { "Type": "String" },
+    "Zone3ExternalCidr": { "Type": "String" },
+    "Zone3InternalCidr": { "Type": "String" },
+    "Zone3AZ": { "Type": "String" },
+    "Zone4ExternalCidr": { "Type": "String" },
+    "Zone4InternalCidr": { "Type": "String" },
+    "Zone4AZ": { "Type": "String" },
+    "Zone5ExternalCidr": { "Type": "String" },
+    "Zone5InternalCidr": { "Type": "String" },
+    "Zone5AZ": { "Type": "String" },
+    "Zone6ExternalCidr": { "Type": "String" },
+    "Zone6InternalCidr": { "Type": "String" },
+    "Zone6AZ": { "Type": "String" },
+    "NetworkName": { "Type": "String" }, 
+    "Environment": { "Type": "String" },
+    "Production": { "Type": "String" }
+
+  },
+  "Resources": { 
+    "Vpc": {
+      "Type": "AWS::CloudFormation::Stack", 
+      "Properties": { 
+        "Parameters": { 
+          "VpcCidrBlock": { "Ref": "VpcCidrBlock" },
+          "Zone1ExternalCidr": { "Ref": "Zone1ExternalCidr" },
+          "Zone1InternalCidr": { "Ref": "Zone1InternalCidr" },
+          "Zone1AZ": { "Ref": "Zone1AZ" },
+          "Zone2ExternalCidr": { "Ref": "Zone2ExternalCidr" },
+          "Zone2InternalCidr": { "Ref": "Zone2InternalCidr" },
+          "Zone2AZ": { "Ref": "Zone2AZ" },
+          "Zone3ExternalCidr": { "Ref": "Zone3ExternalCidr" },
+          "Zone3InternalCidr": { "Ref": "Zone3InternalCidr" },
+          "Zone3AZ": { "Ref": "Zone3AZ" },
+          "Zone4ExternalCidr": { "Ref": "Zone4ExternalCidr" },
+          "Zone4InternalCidr": { "Ref": "Zone4InternalCidr" },
+          "Zone4AZ": { "Ref": "Zone4AZ" },
+          "Zone5ExternalCidr": { "Ref": "Zone5ExternalCidr" },
+          "Zone5InternalCidr": { "Ref": "Zone5InternalCidr" },
+          "Zone5AZ": { "Ref": "Zone5AZ" },
+          "Zone6ExternalCidr": { "Ref": "Zone6ExternalCidr" },
+          "Zone6InternalCidr": { "Ref": "Zone6InternalCidr" },
+          "Zone6AZ": { "Ref": "Zone6AZ" },
+          "NetworkName": { "Ref": "NetworkName" }, 
+          "Environment": { "Ref": "Environment" },
+          "Production": { "Ref": "Production" }
+        },
+        "TemplateURL": "file://vpc.json"
+      }
+    },
+    "Iam": { 
+      "Type": "AWS::CloudFormation::Stack", 
+      "Properties": { 
+        "TemplateURL": "file://iam.json"
+      }
+    }
+  }
+}

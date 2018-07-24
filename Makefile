@@ -16,7 +16,7 @@ interim-users:
     aws --region $${AWS_REGION:-us-east-2} cloudformation update-stack --template-body file://iam.json --stack-name $(iam_stack_name) --capabilities CAPABILITY_NAMED_IAM; \
     fi
       
- 
 # this uses its own stack to autodeploy itself
 bootstrap: 
-
+	cd templates
+	aws --region $${AWS_REGION:-us-east-2} cloudformation validate-template --template-body file://pipeline.json 
