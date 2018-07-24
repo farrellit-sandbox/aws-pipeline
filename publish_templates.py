@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import json, re, boto3, hashlib,  os, sys
 
 class FileUrlReplacer:

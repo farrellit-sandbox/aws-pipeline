@@ -26,7 +26,7 @@
            "Environment": {
              "Type": "linuxContainer",
              "ComputeType": "BUILD_GENERAL1_SMALL",
-             "Image": "aws/codebuild/ubuntu-base:14.04",
+             "Image": "aws/codebuild/python:3.6.5",
              "EnvironmentVariables": [ 
                {
                  "Name": "BUCKET", 

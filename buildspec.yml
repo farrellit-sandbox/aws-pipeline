@@ -2,12 +2,10 @@ version: 0.2
 phases:
   install: 
     commands:
-    - pip3 install --upgrade pip
-    - pip3 install boto3
+    - pip install boto3
   build:
     commands:
-    - python3 --version
-    - OUTPUT="cooked-stack.json" python3 ./publish_templates.py
+    - OUTPUT="cooked-stack.json" ./publish_templates.py
 artifacts:
   files:
   - cooked-stack.json
