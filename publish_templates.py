@@ -16,6 +16,7 @@ class FileUrlReplacer:
     normalized_content = self.NormalizeJson(data)
     chksum = hashlib.sha256(normalized_content).hexdigest()
     s3path = "{path}/{chksum}".format(path=path,chksum=chksum)
+    sys.stderr.write("PUT {path} to S3://{bucket}/{s3path}\n".format(bucket=self.bucket,s3path=s3path,path=path))
     if not self.dryrun:
       self.client.put_object(
         Body=normalized_content,
@@ -23,9 +24,8 @@ class FileUrlReplacer:
         Key=s3path,
         ContentType = "application/json",
       )
-      sys.stderr.write("PUT object S3://{Bucket}/{s3path}\n".format(bucket=self.bucket,s3path=s3path))
     else:
-      sys.stderr.write("DRY RUN , not actually pushing to s3" + "\n")
+      sys.stderr.write("DRY RUN , not actually pushing  to s3\n")
     if self.region == 'us-east-1':
       hostname = 's3'
     else:
@@ -59,6 +59,7 @@ class FileUrlReplacer:
           subdata = self.ReplaceFileUrls(data=json.loads(content))
           s3url = self.PublishFile(path=path,data=subdata)
           data[k] = s3url
+          sys.stderr.write("Replacing {v} with {s3url}".format(v=v,s3url=s3url))
     # now the entire data structure is replaced recursively
     if kwargs.get('output'):
       with open(kwargs['output'],'w') as f:
