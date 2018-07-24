@@ -1,4 +1,4 @@
-FROM python:alpine
+FROM python:3-alpine
 RUN pip install --upgrade pip
 RUN pip install boto3 pytest
 RUN mkdir -p /code
