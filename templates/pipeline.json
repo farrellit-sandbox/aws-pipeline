@@ -85,7 +85,9 @@
                          "Effect": "Allow",
                          "Action": [
                            "cloudformation:Get*",
-                           "cloudformation:Describe*"
+                           "cloudformation:Describe*",
+                           "cloudformation:Create*",
+                           "cloudformation:Update*"
                          ],
                          "Resource": [ "*" ]
                        },
