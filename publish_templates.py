@@ -65,5 +65,5 @@ class FileUrlReplacer:
     return data
 
 if __name__ == "__main__":
-  fur = FileUrlReplacer(bucket=os.environ['BUCKET'], entrypoint=os.environ['ENTRYPOINT'], output=os.environ['OUTPUT'])
+  fur = FileUrlReplacer(bucket=os.environ['BUCKET'], entrypoint=os.environ['ENTRYPOINT'], output=os.environ['OUTPUT'], region=os.environ['REGION'])
   result = fur.ReplaceFileUrls()

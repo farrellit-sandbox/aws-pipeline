@@ -37,6 +37,11 @@
                  "Name": "ENTRYPOINT", 
                  "Type": "PLAINTEXT",
                  "Value": { "Ref": "SiteTemplate" }
+               },
+               {
+                 "Name": "REGION", 
+                 "Type": "PLAINTEXT",
+                 "Value": { "Ref": "AWS::Region" }
                }
              ]
            },
