@@ -52,13 +52,13 @@
           "Environment": { "Ref": "Environment" },
           "Production": { "Ref": "Production" }
         },
-        "TemplateURL": "file://vpc.json"
+        "TemplateURL": "file://templates/vpc.json"
       }
     },
     "Iam": { 
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": { 
-        "TemplateURL": "file://iam.json"
+        "TemplateURL": "file://templates/iam.json"
       }
     }
   }

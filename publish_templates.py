@@ -59,7 +59,7 @@ class FileUrlReplacer:
           subdata = self.ReplaceFileUrls(data=json.loads(content))
           s3url = self.PublishFile(path=path,data=subdata)
           data[k] = s3url
-          sys.stderr.write("Replacing {v} with {s3url}".format(v=v,s3url=s3url))
+          sys.stderr.write("Replacing {v} with {s3url}\n".format(v=v,s3url=s3url))
     # now the entire data structure is replaced recursively
     if kwargs.get('output'):
       with open(kwargs['output'],'w') as f:

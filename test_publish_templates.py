@@ -1,7 +1,7 @@
 import pytest, tempfile, hashlib, json, os
 from publish_templates import FileUrlReplacer
 
-
+origdir=os.getcwd()
 os.chdir("/tmp")
 
 def test_NormalizeJson():
@@ -41,3 +41,10 @@ def test_ReplaceFileUrls():
   assert res == { "filepath": "https://s3.amazonaws.com/bucket/test.json/" + expected_test_data_hash }
   with open('result.json', 'r') as f:
     assert json.loads(f.read()) == res
+
+def test_Integration():
+  import sys
+  os.chdir(origdir)
+  x = FileUrlReplacer(bucket='bucket', region='us-east-1', entrypoint='deployments/farrellit-sandbox/site.json', dryrun=True, output='result.json' )
+  x.ReplaceFileUrls()
+
