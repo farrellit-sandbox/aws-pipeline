@@ -7,7 +7,8 @@ phases:
   build:
     commands:
     - "which python3 || which python && python --version"
-    - OUTPUT="../cooked-stack.json" python ./publish_templates.py
+    - ls -la
+    - OUTPUT="cooked-stack.json" python ./publish_templates.py
 artifacts:
   files:
   - cooked-stack.json

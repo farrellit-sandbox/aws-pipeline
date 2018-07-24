@@ -19,10 +19,11 @@ class FileUrlReplacer:
     if not self.dryrun:
       self.client.put_object(
         Body=normalized_content,
-        Bucket=os.environ('BUCKET'),
+        Bucket=self.bucket,
         Key=s3path,
         ContentType = "application/json",
       )
+      sys.stderr.write("PUT object S3://{Bucket}/{s3path}\n".format(bucket=self.bucket,s3path=s3path))
     else:
       sys.stderr.write("DRY RUN , not actually pushing to s3" + "\n")
     if self.region == 'us-east-1':

@@ -27,13 +27,13 @@
           "Environment": "dev",
           "Production": "False"
         },
-        "TemplateURL": "file://vpc.json"
+        "TemplateURL": "file://templates/vpc.json"
       }
     },
     "Iam": { 
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": { 
-        "TemplateURL": "file://vpc.json"
+        "TemplateURL": "file://templates/iam.json"
       }
     }
   }

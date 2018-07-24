@@ -80,7 +80,7 @@
       "Condition": "Zone1Enabled",
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": {
-        "TemplateURL": "file://subnet.json",
+        "TemplateURL": "file://templates/subnet.json",
         "Parameters": {
           "VpcId": { "Ref": "VPC" },
           "Zone": { "Ref": "Zone1AZ" },
@@ -95,7 +95,7 @@
     "Zone2": {
       "Condition": "Zone2Enabled",
       "Type": "AWS::CloudFormation::Stack", 
-        "TemplateURL": "file://subnet.json",
+        "TemplateURL": "file://templates/subnet.json",
       "Properties": {
       "Parameters": {
           "VpcId": { "Ref": "VPC" },
@@ -111,7 +111,7 @@
     "Zone3": {
       "Condition": "Zone3Enabled",
       "Type": "AWS::CloudFormation::Stack", 
-        "TemplateURL": "file://subnet.json",
+        "TemplateURL": "file://templates/subnet.json",
       "Properties": {
       "Parameters": {
           "VpcId": { "Ref": "VPC" },
@@ -127,7 +127,7 @@
     "Zone4": {
       "Condition": "Zone4Enabled",
       "Type": "AWS::CloudFormation::Stack", 
-        "TemplateURL": "file://subnet.json",
+        "TemplateURL": "file://templates/subnet.json",
       "Properties": {
       "Parameters": {
           "VpcId": { "Ref": "VPC" },
@@ -143,7 +143,7 @@
     "Zone5": {
       "Condition": "Zone5Enabled",
       "Type": "AWS::CloudFormation::Stack", 
-        "TemplateURL": "file://subnet.json",
+        "TemplateURL": "file://templates/subnet.json",
       "Properties": {
       "Parameters": {
           "VpcId": { "Ref": "VPC" },
@@ -159,7 +159,7 @@
     "Zone6": {
       "Condition": "Zone6Enabled",
       "Type": "AWS::CloudFormation::Stack", 
-        "TemplateURL": "file://subnet.json",
+        "TemplateURL": "file://templates/subnet.json",
       "Properties": {
       "Parameters": {
           "VpcId": { "Ref": "VPC" },
