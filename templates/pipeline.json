@@ -84,7 +84,8 @@
                          "Sid": "cloudformationpolicy",
                          "Effect": "Allow",
                          "Action": [
-                           "cloudformation:*"
+                           "cloudformation:Get*",
+                           "cloudformation:Describe*"
                          ],
                          "Resource": [ "*" ]
                        },
@@ -104,6 +105,46 @@
                            "s3:PutObject"
                          ],
                          "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "Bucket", "Arn" ]  }, "/*" ] ] } 
+                       },
+                       {
+                         "Effect"   : "Allow",
+                         "Action"   : [
+                           "iam:PassRole",
+                           "iam:GetRole*"
+                         ],
+                         "Resource" : { "Fn::GetAtt": [ "DeployRole", "Arn" ] }
+                       }
+                     ]
+                   }
+                 }
+               ]
+             }
+           },
+          "DeployRole": {
+             "Type": "AWS::IAM::Role",
+             "Properties": {
+               "Path": "/devops/delivery/",
+               "AssumeRolePolicyDocument": {
+                 "Version": "2012-10-17",
+                 "Statement": [
+                   {
+                     "Effect": "Allow",
+                     "Principal": { "Service": [ "cloudformation.amazonaws.com" ] },
+                     "Action": "sts:AssumeRole"
+                   }
+                 ]
+               },
+               "Policies": [
+                 {
+                   "PolicyName": "BuildPolicy",
+                   "PolicyDocument": {
+                     "Version": "2012-10-17",
+                     "Statement": [
+                       {
+                         "Sid": "AllowAnythingForDeployment",
+                         "Effect": "Allow",
+                         "Action": [ "*" ],
+                         "Resource": [ "*" ]
                        }
                      ]
                    }
@@ -164,7 +205,7 @@
                     "Configuration":{
                       "StackName": {"Fn::Sub": "${ProjectName}-Pipeline" },
                       "ActionMode": "REPLACE_ON_FAILURE",
-                      "RoleArn": { "Fn::GetAtt": [ "BuildRole", "Arn" ] },
+                      "RoleArn": { "Fn::GetAtt": [ "DeployRole", "Arn" ] },
                       "Capabilities":"CAPABILITY_IAM",
                       "TemplateConfiguration": { "Fn::Sub": "GithubArtifact::${PipelineTemplateConfigurationPath}" },
                       "TemplatePath": "GithubArtifact::templates/pipeline.json"
@@ -220,7 +261,7 @@
                     "Configuration":{
                       "StackName": { "Ref": "ProjectName" },
                       "ActionMode": "REPLACE_ON_FAILURE",
-                      "RoleArn": { "Fn::GetAtt": [ "BuildRole", "Arn" ] },
+                      "RoleArn": { "Fn::GetAtt": [ "DeployRole", "Arn" ] },
                       "Capabilities":"CAPABILITY_NAMED_IAM", 
                       "TemplatePath": { "Fn::Sub": "BuildOutput::${BuildOutputStackTemplatePath}" },
                       "TemplateConfiguration": { "Fn::Sub": "GithubArtifact::${SiteConfigurationPath}" }
