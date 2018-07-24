@@ -95,18 +95,15 @@
                          "Sid": "S3GetObjectPolicy",
                          "Effect": "Allow",
                          "Action": [
-                           "s3:GetObject",
-                           "s3:GetObjectVersion"
+                           "s3:Get*",
+                           "s3:Describe*",
+                           "s3:Put*",
+                           "s3:List*"
                          ],
-                         "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "Bucket", "Arn" ]  }, "/*" ] ] } 
-                       },
-                       {
-                         "Sid": "S3PutObjectPolicy",
-                         "Effect": "Allow",
-                         "Action": [
-                           "s3:PutObject"
-                         ],
-                         "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "Bucket", "Arn" ]  }, "/*" ] ] } 
+                         "Resource": [
+                          { "Fn::GetAtt": [ "Bucket", "Arn" ] },
+                          { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "Bucket", "Arn" ]  }, "/*" ] ] } 
+                         ]
                        },
                        {
                          "Effect"   : "Allow",
