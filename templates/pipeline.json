@@ -221,7 +221,7 @@
                       "StackName": { "Ref": "ProjectName" },
                       "ActionMode": "REPLACE_ON_FAILURE",
                       "RoleArn": { "Fn::GetAtt": [ "BuildRole", "Arn" ] },
-                      "Capabilities":[ "CAPABILITY_IAM", "CAPABILITY_NAMED_IAM" ],
+                      "Capabilities":"CAPABILITY_NAMED_IAM", 
                       "TemplatePath": { "Fn::Sub": "BuildOutput::${BuildOutputStackTemplatePath}" },
                       "TemplateConfiguration": { "Fn::Sub": "GithubArtifact::${SiteConfigurationPath}" }
                     },

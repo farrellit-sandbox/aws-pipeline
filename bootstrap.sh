@@ -41,5 +41,6 @@ echo "Validating pipeline stack template"
 aws cloudformation validate-template --template-body file://templates/pipeline.json
 echo "Validating entrypoint stack template $entrypoint"
 aws cloudformation validate-template --template-body file://${entrypoint}
-aws cloudformation create-stack --stack-name "$stack_name" --capabilities CAPABILITY_IAM --on-failure DELETE --template-body file://templates/pipeline.json \
+if aws cloudformation describe-stacks --stack-name "$stack_name" ; then action="update-stack"; else action="create-stack --on-failure DELETE"; fi
+aws cloudformation $action --stack-name "$stack_name" --capabilities CAPABILITY_IAM --template-body file://templates/pipeline.json \
   --parameters "`python -c 'import json,sys; f=open(sys.argv[1]); data=json.loads(f.read()); sys.stdout.write(json.dumps([{"ParameterKey":k,"ParameterValue": data[k]} for k in data.keys() ],indent=None,separators=(",",":") ))' "${pipeline_config}" `"
