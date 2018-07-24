@@ -122,6 +122,24 @@
                ]
              }
            },
+          "CodeBuildPolicy": {
+              "Type" : "AWS::IAM::Policy",
+              "Properties" : {
+              "PolicyName" : "PipelineBuild",
+              "PolicyDocument" : {
+                "Version" : "2012-10-17",
+                "Statement": [  
+                  {
+                    "Sid": "AllowProjectBuilds",
+                    "Effect": "Allow",
+                    "Action": [ "codebuild:*" ],
+                    "Resource": [ { "Fn::GetAtt": [ "CodeBuildProject", "Arn" ] } ]
+                  }
+                ]
+              },
+              "Roles" : [ { "Ref" : "BuildRole" } ]
+            }
+          },
           "DeployRole": {
              "Type": "AWS::IAM::Role",
              "Properties": {

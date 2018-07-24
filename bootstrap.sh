@@ -35,7 +35,7 @@ entrypoint="${entrypoint:-$default_entrypoint}"
 
 
 set -e
-stack_name="`python -c 'import json,sys; f=open(sys.argv[1]); data=json.loads(f.read()); sys.stdout.write(data["Parameters"]["ProjectName"])' "${pipeline_config}" `"
+stack_name="`python -c 'import json,sys; f=open(sys.argv[1]); data=json.loads(f.read()); sys.stdout.write(data["Parameters"]["ProjectName"])' "${pipeline_config}" `-Pipeline"
 echo "Stack name will be $stack_name"
 echo "Validating pipeline stack template"
 aws cloudformation validate-template --template-body file://templates/pipeline.json
