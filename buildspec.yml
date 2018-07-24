@@ -3,9 +3,10 @@ phases:
   install: 
     commands:
     - pip install boto3
+    - python --version || python3 --version || true
   build:
     commands:
-    - OUTPUT="cooked-stack.json" ./publish_templates.py
+    - OUTPUT="cooked-stack.json" python ./publish_templates.py
 artifacts:
   files:
   - cooked-stack.json
