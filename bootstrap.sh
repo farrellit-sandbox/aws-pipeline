@@ -34,13 +34,13 @@ read entrypoint
 entrypoint="${entrypoint:-$default_entrypoint}"
 
 
-stack_name="`python -c 'import json,sys; f=open(sys.argv[1]); data=json.loads(f.read()); sys.stdout.write(data["ProjectName"])' "${pipeline_config}" `"
-echo "Stack name will be $stack_name"
 set -e
+stack_name="`python -c 'import json,sys; f=open(sys.argv[1]); data=json.loads(f.read()); sys.stdout.write(data["Parameters"]["ProjectName"])' "${pipeline_config}" `"
+echo "Stack name will be $stack_name"
 echo "Validating pipeline stack template"
 aws cloudformation validate-template --template-body file://templates/pipeline.json
 echo "Validating entrypoint stack template $entrypoint"
 aws cloudformation validate-template --template-body file://${entrypoint}
 if aws cloudformation describe-stacks --stack-name "$stack_name" ; then action="update-stack"; else action="create-stack --on-failure DELETE"; fi
 aws cloudformation $action --stack-name "$stack_name" --capabilities CAPABILITY_IAM --template-body file://templates/pipeline.json \
-  --parameters "`python -c 'import json,sys; f=open(sys.argv[1]); data=json.loads(f.read()); sys.stdout.write(json.dumps([{"ParameterKey":k,"ParameterValue": data[k]} for k in data.keys() ],indent=None,separators=(",",":") ))' "${pipeline_config}" `"
+  --parameters "`python -c 'import json,sys; f=open(sys.argv[1]); data=json.loads(f.read()); sys.stdout.write(json.dumps([{"ParameterKey":k,"ParameterValue": data["Parameters"][k]} for k in data["Parameters"].keys() ],indent=None,separators=(",",":") ))' "${pipeline_config}" `"
