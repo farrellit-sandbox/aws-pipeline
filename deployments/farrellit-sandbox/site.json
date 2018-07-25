@@ -29,7 +29,6 @@
   },
   "Resources": { 
     "Vpc": {
-      "Condition": "IncludeDebug",
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": { 
         "Parameters": { 
