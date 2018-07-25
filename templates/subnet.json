@@ -92,6 +92,11 @@
     }
   },
   "Outputs": {
-    "NatGateway": { "Value": { "Ref": "DedicatedNatGateway" }, "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:NatGateway" } } }
+    "NatGateway": { 
+      "Condition": "CreateNat",
+      "Value": { "Ref": "DedicatedNatGateway" }, 
+      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:NatGateway" } 
+    } 
+  }
   }
 }
