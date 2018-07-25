@@ -13,7 +13,7 @@
   "Conditions": { 
     "InternalInternetAccess": { "Fn::Equals": [ { "Ref": "AllowInternalInternetAccess" }, "True" ] },
     "CreateNat": { "Fn::And": [
-      { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "NatGateway" }, "" ] } ] },
+      { "Fn::Equals": [ { "Ref": "NatGateway" }, "" ] },
       { "Condition": "InternalInternetAccess"  }
     ] }
   },
