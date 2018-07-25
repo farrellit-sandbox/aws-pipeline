@@ -5,18 +5,18 @@ origdir=os.getcwd()
 os.chdir("/tmp")
 
 def test_NormalizeJson():
-  x = FileUrlReplacer(bucket='bucket', region='us-east-1', entrypoint='test.json', dryrun=True, output='/tmp/result.json')
+  x = FileUrlReplacer(bucket='bucket', region='us-east-1', entrypoint='test.json', dryrun=True, output='/tmp/result.json',validate_templates=False)
   assert x.NormalizeJson([{"A":1,"B":2},"C",3,None]) == '[{"A":1,"B":2},"C",3,null]'.encode('utf-8')
 
 def test_PublishFile():
   with tempfile.NamedTemporaryFile() as f:
-    x = FileUrlReplacer(bucket='bucket', region='us-east-1', entrypoint='test.json', dryrun=True, output='/tmp/result.json' )
+    x = FileUrlReplacer(bucket='bucket', region='us-east-1', entrypoint='test.json', dryrun=True, output='/tmp/result.json',validate_templates=False )
     f.write(x.NormalizeJson('{}'))
     f.flush()
     expected_hash = hashlib.sha256("{}".encode('utf-8')).hexdigest()
     assert x.PublishFile(path=f.name,data={}) == \
       'https://s3.amazonaws.com/bucket/' + f.name + '/' + expected_hash 
-    x = FileUrlReplacer(bucket='bucket', region='us-east-2', entrypoint='test.json', dryrun=True, output='/tmp/result.json' )
+    x = FileUrlReplacer(bucket='bucket', region='us-east-2', entrypoint='test.json', dryrun=True, output='/tmp/result.json' , validate_templates=False)
     assert x.PublishFile(path=f.name,data={}) == \
       'https://s3-us-east-2.amazonaws.com/bucket/' + f.name + '/' + expected_hash 
  
@@ -28,7 +28,7 @@ def test_ReplaceFileUrls():
   test2data = {"A": [1,2,3], "B": "456" }
   with open('test2.json','w') as f:
     f.write( json.dumps(test2data) )
-  x = FileUrlReplacer(bucket='bucket', region='us-east-1', entrypoint='entry.json', dryrun=True, output='/tmp/result.json' )
+  x = FileUrlReplacer(bucket='bucket', region='us-east-1', entrypoint='entry.json', dryrun=True, output='/tmp/result.json', validate_templates=False )
   res = x.ReplaceFileUrls(path='test2.json')
   assert res == test2data
   res = x.ReplaceFileUrls(path='test.json')
@@ -45,7 +45,9 @@ def test_ReplaceFileUrls():
 def test_Integration():
   import sys
   os.chdir(origdir)
-  x = FileUrlReplacer(bucket='bucket', region='us-east-1', entrypoint='deployments/farrellit-sandbox/site.json', dryrun=True, output='/tmp/result.json' )
+  x = FileUrlReplacer(bucket='bucket', region='us-east-1', entrypoint='deployments/farrellit-sandbox/site.json', dryrun=True, output='/tmp/result.json', validate_templates=True )
   x.ReplaceFileUrls()
   with open('/tmp/result.json', 'r' ) as f:
-    assert 'file://' not in f.read()
+    content = str(f.read())
+    assert 'file://' not in content
+    assert json.loads(content)

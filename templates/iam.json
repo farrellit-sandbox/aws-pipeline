@@ -8,7 +8,7 @@
    },
    "Resources":{
       "StandardUsers":{
-         "Condition": "SingletonRegion",
+         "Condition": "IsSingletonRegion",
          "Type":"AWS::IAM::Group",
          "Properties":{
             "Path":"/users/",
@@ -16,7 +16,7 @@
          }
       },
       "UserAcctMgmtPolicy": {
-         "Condition": "SingletonRegion",
+         "Condition": "IsSingletonRegion",
          "Type": "AWS::IAM::ManagedPolicy",
          "Properties": {
             "Path": "/users/std/",
@@ -71,7 +71,7 @@
          }
       },
       "ReadResourcesPolicy": {
-         "Condition": "SingletonRegion",
+         "Condition": "IsSingletonRegion",
          "Type": "AWS::IAM::ManagedPolicy",
          "Properties": {
             "Path": "/ro/",

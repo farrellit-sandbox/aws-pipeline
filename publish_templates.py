@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import json, re, boto3, hashlib,  os, sys
+import json, re, boto3, hashlib,  os, sys, botocore 
 
 class FileUrlReplacer:
   def __init__(self,**kwargs):
@@ -7,19 +7,35 @@ class FileUrlReplacer:
     self.bucket = kwargs['bucket']
     self.region = kwargs['region']
     self.output = kwargs['output']
-    self.client = boto3.client('s3', region_name=self.region)
+    self.s3client = boto3.client('s3', region_name=self.region)
+    self.cfnclient = boto3.client('cloudformation', region_name=self.region)
     self.dryrun = bool(kwargs.get('dryrun', False))
+    self.validate_templates = bool(kwargs.get('validate_templates',True))
   def PublishFile(self,**kwargs):
     path = kwargs['path']
     assert isinstance(path,str)
     data = kwargs['data'] # remember, this isn't what's in the file ; we're recursively replaceing file://.*.json
     assert isinstance(data,dict)
     normalized_content = self.NormalizeJson(data)
+    # validate content.  We'll just let this explode I guess if it goes badly?
+    if self.validate_templates:
+      try:
+        self.cfnclient.validate_template( TemplateBody=normalized_content.decode('utf-8') )
+      except botocore.exceptions.ClientError as e:
+        if 'ValidationError':
+          sys.stderr.write("Validation error validating template from {path}: {err}.  Template follows...\n{template}\n".format(
+            path=path,
+            err=str(e),
+            template=normalized_content
+          ))
+        raise e
+    else:
+      sys.stdout.write("Not validating template in {path}, as configured\n".format(path=path))
     chksum = hashlib.sha256(normalized_content).hexdigest()
     s3path = "{path}/{chksum}".format(path=path,chksum=chksum)
     sys.stderr.write("PUT {path} to S3://{bucket}/{s3path}\n".format(bucket=self.bucket,s3path=s3path,path=path))
     if not self.dryrun:
-      self.client.put_object(
+      self.s3client.put_object(
         Body=normalized_content,
         Bucket=self.bucket,
         Key=s3path,
