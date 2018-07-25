@@ -1,10 +1,9 @@
 {
   "Parameters": { 
     "VpcId": { "Type": "AWS::EC2::VpcId" },
-    "AvailabilityZone": { "Type": "String" },
     "ExternalCidr":  { "Type": "String" },
     "InternalCidr": { "Type": "String" },
-    "Zone": { "Type": "String", "Description": "The letter representing the zone, typically within [a-f]" }, 
+    "AvailabilityZone": { "Type": "String", "Description": "The letter representing the zone, typically within [a-f]" }, 
     "NatGateway": { "Type": "String", "Description": "In case we're sharing across AZs", "Default": "" },
     "ExternalRouteTable": { "Type": "String", "Description": "Assumedly there'd be a public route table to share but we could create it here" },
     "NetworkName": { "Type": "String" },
@@ -21,7 +20,7 @@
   "Resources": {
     "ExternalSubnet": {
       "Properties": {
-        "AvailabilityZone": { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, { "Ref": "Zone" } ] ] },
+        "AvailabilityZone": { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, { "Ref": "AvailabilityZone" } ] ] },
         "CidrBlock": { "Ref": "ExternalCidr" },
         "Tags": [
           { "Key": "env", "Value": { "Ref": "Environment" } },
@@ -42,7 +41,7 @@
     },
     "InternalSubnet": {
      "Properties": {
-       "AvailabilityZone": { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, { "Ref": "Zone" } ] ] },
+       "AvailabilityZone": { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, { "Ref": "AvailabilityZone" } ] ] },
        "CidrBlock": { "Ref": "InternalCidr" },
        "Tags": [
          { "Key": "env", "Value": { "Ref": "Environment" } },
