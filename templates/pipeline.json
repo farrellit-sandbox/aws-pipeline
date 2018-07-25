@@ -92,7 +92,8 @@
                            "cloudformation:Get*",
                            "cloudformation:Describe*",
                            "cloudformation:Create*",
-                           "cloudformation:Update*"
+                           "cloudformation:Update*",
+                           "cloudformation:Validate*"
                          ],
                          "Resource": [ "*" ]
                        },
