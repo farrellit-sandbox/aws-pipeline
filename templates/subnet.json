@@ -102,8 +102,8 @@
       "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:InternalSubnet" } } 
     },
     "ExternalSubnet": {
-      "Value": { "Ref": "InternalSubnet" }, 
-      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:InternalSubnet" } } 
+      "Value": { "Ref": "ExternalSubnet" }, 
+      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:ExternalSubnet" } } 
     }
   }
 }
