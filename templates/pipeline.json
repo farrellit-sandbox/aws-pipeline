@@ -97,6 +97,14 @@
                          "Resource": [ "*" ]
                        },
                        {
+                         "Sid": "ownstackpolicy",
+                         "Effect": "Allow",
+                         "Action": [
+                           "cloudformation:*"
+                         ],
+                         "Resource": [ { "Fn::Sub": "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ProjectName}*" } ]
+                       },
+                       {
                          "Sid": "S3GetObjectPolicy",
                          "Effect": "Allow",
                          "Action": [

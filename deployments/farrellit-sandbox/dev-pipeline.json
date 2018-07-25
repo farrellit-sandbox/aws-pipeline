@@ -1,6 +1,6 @@
 { 
   "Parameters": {
-    "ProjectName": "farrellit-sandobx-dev", 
+    "ProjectName": "farrellit-sandbox-dev", 
     "SiteTemplate": "deployments/farrellit-sandbox/site.json",
     "SiteConfigurationPath": "deployments/farrellit-sandbox/dev.json",
     "PipelineTemplateConfigurationPath": "deployments/farrellit-sandbox/dev-pipeline.json",

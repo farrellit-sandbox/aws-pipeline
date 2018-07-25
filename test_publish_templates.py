@@ -47,4 +47,5 @@ def test_Integration():
   os.chdir(origdir)
   x = FileUrlReplacer(bucket='bucket', region='us-east-1', entrypoint='deployments/farrellit-sandbox/site.json', dryrun=True, output='/tmp/result.json' )
   x.ReplaceFileUrls()
-
+  with open('/tmp/result.json', 'r' ) as f:
+    assert 'file://' not in f.read()
