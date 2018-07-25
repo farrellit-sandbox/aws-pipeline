@@ -83,12 +83,13 @@
         "TemplateURL": "file://templates/subnet.json",
         "Parameters": {
           "VpcId": { "Ref": "VPC" },
-          "Zone": { "Ref": "Zone1AZ" },
+          "AvailabilityZone": { "Ref": "Zone1AZ" },
           "ExternalCidr": { "Ref": "Zone1ExternalCidr" },
           "InternalCidr": { "Ref": "Zone1ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "NatGateway": ""
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "NatGateway":""
         }
       }
     },
@@ -99,12 +100,13 @@
         "TemplateURL": "file://templates/subnet.json",
         "Parameters": {
           "VpcId": { "Ref": "VPC" },
-          "Zone": { "Ref": "Zone2AZ" },
+          "AvailabilityZone": { "Ref": "Zone2AZ" },
           "ExternalCidr": { "Ref": "Zone2ExternalCidr" },
           "InternalCidr": { "Ref": "Zone2ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "NatGateway": { "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "NatGateway":{ "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
         }
       }
     },
@@ -115,12 +117,13 @@
         "TemplateURL": "file://templates/subnet.json",
         "Parameters": {
           "VpcId": { "Ref": "VPC" },
-          "Zone": { "Ref": "Zone3AZ" },
+          "AvailabilityZone": { "Ref": "Zone3AZ" },
           "ExternalCidr": { "Ref": "Zone3ExternalCidr" },
           "InternalCidr": { "Ref": "Zone3ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "NatGateway": { "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "NatGateway":{ "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
         }
       }
     },
@@ -131,12 +134,13 @@
         "TemplateURL": "file://templates/subnet.json",
         "Parameters": {
           "VpcId": { "Ref": "VPC" },
-          "Zone": { "Ref": "Zone4AZ" },
+          "AvailabilityZone": { "Ref": "Zone4AZ" },
           "ExternalCidr": { "Ref": "Zone4ExternalCidr" },
           "InternalCidr": { "Ref": "Zone4ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "NatGateway": { "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "NatGateway":{ "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
         }
       }
     },
@@ -147,12 +151,13 @@
         "TemplateURL": "file://templates/subnet.json",
         "Parameters": {
           "VpcId": { "Ref": "VPC" },
-          "Zone": { "Ref": "Zone5AZ" },
+          "AvailabilityZone": { "Ref": "Zone5AZ" },
           "ExternalCidr": { "Ref": "Zone5ExternalCidr" },
           "InternalCidr": { "Ref": "Zone5ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "NatGateway": { "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "NatGateway":{ "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
         }
       }
     },
@@ -163,12 +168,13 @@
         "TemplateURL": "file://templates/subnet.json",
         "Parameters": {
           "VpcId": { "Ref": "VPC" },
-          "Zone": { "Ref": "Zone6AZ" },
+          "AvailabilityZone": { "Ref": "Zone6AZ" },
           "ExternalCidr": { "Ref": "Zone6ExternalCidr" },
           "InternalCidr": { "Ref": "Zone6ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "NatGateway": { "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "NatGateway":{ "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
         }
       }
     }

@@ -6,7 +6,6 @@
     "InternalCidr": { "Type": "String" },
     "Zone": { "Type": "String", "Description": "The letter representing the zone, typically within [a-f]" }, 
     "NatGateway": { "Type": "String", "Description": "In case we're sharing across AZs", "Default": "" },
-    "InternetGateway": { "Type": "String", "Description": "Assuming we're sharing this" },
     "ExternalRouteTable": { "Type": "String", "Description": "Assumedly there'd be a public route table to share but we could create it here" },
     "NetworkName": { "Type": "String" },
     "Environment": { "Type": "String" },
