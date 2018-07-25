@@ -1,6 +1,6 @@
 {
   "Parameters": { 
-    "VpcId": { "Type": "AWS::EC2::VpcId" },
+    "VpcId": { "Type": "AWS::EC2::Id" },
     "ExternalCidr":  { "Type": "String" },
     "InternalCidr": { "Type": "String" },
     "AvailabilityZone": { "Type": "String", "Description": "The letter representing the zone, typically within [a-f]" }, 
