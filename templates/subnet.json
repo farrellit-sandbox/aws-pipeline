@@ -95,8 +95,15 @@
     "NatGateway": { 
       "Condition": "CreateNat",
       "Value": { "Ref": "DedicatedNatGateway" }, 
-      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:NatGateway" } 
-    } 
-  }
+      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:NatGateway" } } 
+    },
+    "InternalSubnet": { 
+      "Value": { "Ref": "InternalSubnet" }, 
+      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:InternalSubnet" } } 
+    },
+    "ExternalSubnet": {
+      "Value": { "Ref": "InternalSubnet" }, 
+      "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:InternalSubnet" } } 
+    }
   }
 }
