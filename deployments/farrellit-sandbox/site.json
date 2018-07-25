@@ -24,8 +24,12 @@
     "Production": { "Type": "String" }
 
   },
+  "Conditions": {
+    "IncludeDebug": { "Fn::Equal": [ "False", "True" ] }
+  },
   "Resources": { 
     "Vpc": {
+      "Condition": "IncludeDebug",
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": { 
         "Parameters": { 
