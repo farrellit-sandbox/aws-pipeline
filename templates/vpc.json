@@ -88,7 +88,7 @@
           "InternalCidr": { "Ref": "Zone1ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable" },
           "NatGateway":""
         }
       }
@@ -105,7 +105,7 @@
           "InternalCidr": { "Ref": "Zone2ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable" },
           "NatGateway":{ "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
         }
       }
@@ -122,7 +122,7 @@
           "InternalCidr": { "Ref": "Zone3ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable" },
           "NatGateway":{ "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
         }
       }
@@ -139,7 +139,7 @@
           "InternalCidr": { "Ref": "Zone4ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable" },
           "NatGateway":{ "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
         }
       }
@@ -156,7 +156,7 @@
           "InternalCidr": { "Ref": "Zone5ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable" },
           "NatGateway":{ "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
         }
       }
@@ -173,7 +173,7 @@
           "InternalCidr": { "Ref": "Zone6ExternalCidr" },
           "NetworkName": { "Ref": "NetworkName" },
           "Environment": { "Ref": "Environment" },
-          "ExternalRouteTable": { "Ref": "ExternalRouteTable": },
+          "ExternalRouteTable": { "Ref": "ExternalRouteTable" },
           "NatGateway":{ "Fn::If": [ "IsProduction", "", { "Fn::GetAtt": [ "Zone1", "Outputs.NatGateway" ] } ] }
         }
       }
