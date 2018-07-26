@@ -3,20 +3,21 @@
     "ApplicationName": {"Type": "String" },
     "RepositoryName": { "Type": "String", "Default": "" },
     "CreateRepository": { "Type": "String", "Default": "True", "Description": "Whether to create a repo or just assume it exists" },
-    "NetworkName": { "Type": "String" },
+    "ApplicationGroup": { "Type": "String" },
     "Environment": { "Type": "String" },
     "AppSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" },
     "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" }
   },
   "Conditions": {
-    "CreateRepository": { "Fn::Equals": [ "True", { "Ref": "RepositoryName" } ] },
+    "CreateRepository": { "Fn::Equals": [ "True", { "Ref": "CreateRepository" } ] },
     "UseRepositoryName": { "Fn::Not": [ { "Fn::Equals": [ "RepositoryName", "" ] } ] }
   },
   "Resources": {
     "ImageRepo": {
+      "Condition": "CreateRepository",
       "Type": "AWS::ECR::Repository",
       "Properties": {
-        "RepositoryName": { "Fn::If": [ "UseRepositoryName", { "Ref": "RepositoryName" }, { "Ref": "ApplicationName" } ] }
+        "RepositoryName": { "Fn::If": [ "UseRepositoryName", { "Ref": "RepositoryName" }, { "Fn::Sub": "${ApplicationGroup}/${ApplicationName}" } ]  }
       }
     }
   }
