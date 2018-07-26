@@ -6,7 +6,8 @@
     "ApplicationGroup": { "Type": "String","Description": "Must be lowercase"  },
     "Environment": { "Type": "String" },
     "AppSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" },
-    "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" }
+    "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" },
+    "ImageId": { "Type": "String" }
   },
   "Conditions": {
     "CreateRepository": { "Fn::Equals": [ "True", { "Ref": "CreateRepository" } ] },
@@ -29,7 +30,8 @@
           "AppSubnets": { "Ref": "AppSubnets" },
           "LoadBalancerSubnets": { "Ref": "LoadBalancerSubnets" },
           "RepositoryName": { "Fn::If": [ "CreateRepository", { "Ref": "ImageRepo" }, { "Ref": "RepositoryName" } ] },
-          "ImageTag": "latest"
+          "ImageTag": "latest",
+          "ImageId": { "Ref": "ImageId" }
         }
       }
     }
