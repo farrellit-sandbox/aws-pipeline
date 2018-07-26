@@ -1,37 +1,40 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "A stack that, given an ECR repo, can create an ASG and launch config" },
     "Parameters": {
-        "DiscoverRepository": {
-            "Default": "vpndiscovery",
+        "RepositoryName": {
             "Description": "The name of the ECR image to pull out of this account/region's ECR",
             "Type": "String"
         },
+        "ImageTag": { 
+          "Type": "String",
+          "Description": "Docker image tag to pull"
+        },
         "ApplicationName": { "Type": "String", "Description": "For classification purposes" },
-        "Environment": { "Type": "String", "Description": "For classification purposes" }
+        "AppSubnets": { "Type": "List<AWS::EC2::Subnet::Id>", "Description": "subnet(s) to use" },
+        "Environment": { "Type": "String", "Description": "For classification purposes" },
+        "LogRetentionInDays": { "Type": "Number", "Default": "14" }
     },
     "Resources": {
+        "ApplicationLogGroup": {   
+            "Properties": {
+                "LogGroupName": { "Fn::Sub": "${Environment}-${ApplicationName}" },
+                "RetentionInDays": { "Ref": "LogRetentionInDays" }
+            },
+            "Type": "AWS::Logs::LogGroup"
+        },
         "ApplicationASG": {
             "Properties": {
                 "Cooldown": "90",
                 "DesiredCapacity": "1",
-                "HealthCheckGracePeriod": "90",
-                "HealthCheckType": "ELB",
-                "LaunchConfigurationName": {
-                    "Ref": "PingTargetLaunchConfig"
-                },
+                "HealthCheckGracePeriod": "180",
+                "HealthCheckType": "EC2",
+                "LaunchConfigurationName": { "Ref": "LaunchConfig" },
                 "MaxSize": "2",
                 "MinSize": "1",
                 "Tags": [
-                    {
-                        "Key": "app",
-                        "PropagateAtLaunch": true,
-                        "Value": { "Ref": "ApplicationName" }
-                    },
-                    {
-                        "Key": "environment",
-                        "PropagateAtLaunch": true,
-                        "Value": { "Ref": "Environment" }
-                    }
+                    { "Key": "app", "PropagateAtLaunch": true, "Value": { "Ref": "ApplicationName" } },
+                    { "Key": "environment", "PropagateAtLaunch": true, "Value": { "Ref": "Environment" } }
                 ],
                 "VPCZoneIdentifier": { "Ref": "AppSubnets" }
             },
@@ -59,13 +62,42 @@
                 "InstanceType":  { "Ref": "ImageType" },
                 "KeyName": { "Ref": "KeyName" },
                 "SecurityGroups":  { "Ref": "AppSecurityGroups" },
-                "UserData": { "Ref": "see user-data.json - but this is a key integration point" }
+                "UserData": { "Fn::Base64": { "Fn::Sub": { "Fn::Join": [ "\n", [
+                  "#!/bin/bash -ex",
+                  "function finish { ",
+                  "  exit_code=${1:-99};",
+                  "  shift",
+                  "  /opt/aws/bin/cfn-signal -e $exit_code --stack ${AWS::StackName} --region ${AWS::Region} --resource 'ApplicationASG' $@; ",
+                  "  [[ $exit_code == 0 ]] && trap - EXIT ; ",
+                  "  exit $exit_code;",
+                  "}",
+                  "trap finish EXIT",
+                  "# get instance id for logging",
+                  "export INSTANCE_ID=\"`curl 169.254.169.254/latest/meta-data/instance-id`\"",
+                  "#determine whether we need no-include-email",
+                  "set +e; docker login -e  </dev/null >/dev/null; if [ $? == 125 ]; then incemail=--no-include-email;fi; set -e",
+                  "eval `aws --region ${AWS::Region} ecr get-login $incemail`",
+                  "# run application in daemonic mode",
+                  "# TODO: expose environment file",
+                  "docker run -d \\",
+                  "  --log-driver=awslogs \\",
+                  "    --log-opt tag=\"${Environment}-${ApplicationName}/$INSTANCE_ID/{{.ID}}\" \\",
+                  "    --log-opt awslogs-region=${AWS::Region} \\",
+                  "    --log-opt awslogs-group=${ApplicationLogGroup} \\",
+                  "  --restart=always",
+                  "  -e AWS_REGION=${AWS::Region} \\",
+                  "  -e AWS_STACK_NAME=${AWS::StackName} \\",
+                  "  -e AWS_STACK_ID=${AWS::StackId} \\",
+                  "${DockerPorts} \\", 
+                  " ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryName}:${ImageTag}",
+                  "finish 0"
+                ] ] } } }
             },
             "Type": "AWS::AutoScaling::LaunchConfiguration"
         },
         "ApplicationProfile": {
             "Properties": {
-                "Path": "/monitoring/network/",
+                "Path": "/app/${Environment}/${ApplicationName}/",
                 "Roles": [ { "Ref": "ApplicationRole" } ]
             },
             "Type": "AWS::IAM::InstanceProfile"
@@ -84,12 +116,6 @@
                             "Action": [ "sts:AssumeRole" ],
                             "Effect": "Allow",
                             "Principal": { "Service": [ "ec2.amazonaws.com" ] }
-                        },
-                        {
-                            "Action": [ "sts:AssumeRole" ],
-                            "Condition": { "Bool": { "aws:MultiFactorAuthPresent": "true" } },
-                            "Effect": "Allow",
-                            "Principal": { "AWS": { "Ref": "AWS::AccountId" } }
                         }
                     ],
                     "Version": "2012-10-17"
@@ -113,7 +139,7 @@
                                         "ecr:GetDownloadUrlForLayer"
                                     ],
                                     "Effect": "Allow",
-                                    "Resource": [ { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${DiscoverRepository}" }
+                                    "Resource": [ { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${RepositoryName}" }
                                     ]
                                 },
                                 {
