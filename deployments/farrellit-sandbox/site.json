@@ -73,7 +73,7 @@
           "Environment": { "Fn::Sub": "${Environment}" },
           "NetworkName": { "Fn::Sub": "${NetworkName" },
           "AppSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.InternalSubnets" ] },
-          "LoadBalanerSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] }
+          "LoadBalancerSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] }
         }
       }
     }
