@@ -5,7 +5,7 @@
     "CreateRepository": { "Type": "String", "Default": "True", "Description": "Whether to create a repo or just assume it exists" },
     "ApplicationGroup": { "Type": "String" },
     "Environment": { "Type": "String" },
-    "AppSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" },
+    "AppSubnets": { "Type": "List<AWS::EC2::Subnet::Id>", "Description": "(Really a CSV<SubnetId))" },
     "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" }
   },
   "Conditions": {
