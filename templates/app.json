@@ -1,11 +1,11 @@
 { 
   "Parameters": {
-    "ApplicationName": {"Type": "String" },
-    "RepositoryName": { "Type": "String", "Default": "" },
+    "ApplicationName": {"Type": "String" , "Description": "Must be lowercase" },
+    "RepositoryName": { "Type": "String", "Default": "" , "Description": "Must be lowercase" },
     "CreateRepository": { "Type": "String", "Default": "True", "Description": "Whether to create a repo or just assume it exists" },
-    "ApplicationGroup": { "Type": "String" },
+    "ApplicationGroup": { "Type": "String","Description": "Must be lowercase"  },
     "Environment": { "Type": "String" },
-    "AppSubnets": { "Type": "List<AWS::EC2::Subnet::Id>", "Description": "(Really a CSV<SubnetId))" },
+    "AppSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" },
     "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" }
   },
   "Conditions": {
@@ -18,6 +18,19 @@
       "Type": "AWS::ECR::Repository",
       "Properties": {
         "RepositoryName": { "Fn::If": [ "UseRepositoryName", { "Ref": "RepositoryName" }, { "Fn::Sub": "${ApplicationGroup}/${ApplicationName}" } ]  }
+      }
+    },
+    "ApplicationASG": {
+      "Type": "AWS::CloudFormation::Stack", 
+      "Properties": {
+        "TemplateURL": "file://templates/asg.json",
+        "Parameters": {
+          "Environment": { "Ref": "Environment" },
+          "AppSubnets": { "Ref": "AppSubnets" },
+          "LoadBalancerSubnets": { "Ref": "LoadBalancerSubnets" },
+          "RepositoryName": { "Fn::If": [ "CreateRepository", { "Ref": "ImageRepo" }, { "Ref": "RepositoryName" } ] },
+          "ImageTag": "latest"
+        }
       }
     }
   }

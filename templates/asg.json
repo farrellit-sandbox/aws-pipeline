@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "A stack that, given an ECR repo, can create an ASG and launch config" },
+    "Description": "A stack that, given an ECR repo, can create an ASG and launch config",
     "Parameters": {
         "RepositoryName": {
             "Description": "The name of the ECR image to pull out of this account/region's ECR",
@@ -13,7 +13,13 @@
         "ApplicationName": { "Type": "String", "Description": "For classification purposes" },
         "AppSubnets": { "Type": "List<AWS::EC2::Subnet::Id>", "Description": "subnet(s) to use" },
         "Environment": { "Type": "String", "Description": "For classification purposes" },
-        "LogRetentionInDays": { "Type": "Number", "Default": "14" }
+        "LogRetentionInDays": { "Type": "Number", "Default": "14" },
+        "KeyName": { "Type": "String", "Default": "" },
+        "ImageId": { "Type": "String", "Default": "" },
+        "InstanceType": { "Type": "String", "Default": "t2.nano" }
+    },
+    "Conditions": {
+      "OmitSshKey": { "Fn::Equals": [ { "Ref": "KeyName" } , "" ] }
     },
     "Resources": {
         "ApplicationLogGroup": {   
@@ -58,11 +64,11 @@
         "LaunchConfig": {
             "Properties": {
                 "IamInstanceProfile": { "Ref": "ApplicationProfile" },
-                "ImageId": { "Ref": "AppAMI" },
-                "InstanceType":  { "Ref": "ImageType" },
-                "KeyName": { "Ref": "KeyName" },
-                "SecurityGroups":  { "Ref": "AppSecurityGroups" },
-                "UserData": { "Fn::Base64": { "Fn::Sub": { "Fn::Join": [ "\n", [
+                "ImageId": { "Ref": "ImageId" },
+                "InstanceType":  { "Ref": "InstanceType" },
+                "KeyName": { "Fn::If": [ "OmitSshKey", {"Ref": "AWS::NoValue" }, { "Ref": "KeyName" } ] },
+                "SecurityGroups":  [],
+                "UserData": { "Fn::Base64": { "Fn::Join": [ "\n", [
                   "#!/bin/bash -ex",
                   "function finish { ",
                   "  exit_code=${1:-99};",
@@ -91,7 +97,7 @@
                   "${DockerPorts} \\", 
                   " ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryName}:${ImageTag}",
                   "finish 0"
-                ] ] } } }
+                ] ] } }
             },
             "Type": "AWS::AutoScaling::LaunchConfiguration"
         },
@@ -102,7 +108,7 @@
             },
             "Type": "AWS::IAM::InstanceProfile"
         },
-        "ApplcationRole": {
+        "ApplicationRole": {
             "Properties": {
                 "AssumeRolePolicyDocument": {
                     "Statement": [
@@ -139,8 +145,7 @@
                                         "ecr:GetDownloadUrlForLayer"
                                     ],
                                     "Effect": "Allow",
-                                    "Resource": [ { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${RepositoryName}" }
-                                    ]
+                                    "Resource": [ { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${RepositoryName}" } ]
                                 },
                                 {
                                     "Action": [
@@ -149,7 +154,7 @@
                                         "logs:DescribeLogStreams"
                                     ],
                                     "Effect": "Allow",
-                                    "Resource": [ { "Ref": "LogGroupArn" } ]
+                                    "Resource": [ { "Fn::GetAtt": [ "ApplicationLogGroup", "Arn" ] } ]
                                 }
                             ],
                             "Version": "2012-10-17"

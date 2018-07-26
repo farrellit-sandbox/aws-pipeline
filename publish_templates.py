@@ -68,8 +68,9 @@ class FileUrlReplacer:
       if isinstance(v, dict): # recrsively update sub-dictionaries
         data[k] = self.ReplaceFileUrls(data=v) 
       elif isinstance(v,str): # check strings to see if they're 
-        m = re.match('^file://(.*.json)$', v)
+        m = re.match('^file://(.*.json)(?:\?(?P<args>(?:\w+=\w*&)*(?:\w+=\w*)?))?', v)
         if m:
+          print( m.group('args') )# debug
           path = m.group(1)
           with open(path,'r') as f:
             content = f.read()
