@@ -71,9 +71,10 @@
         "TemplateURL": "file://templates/app.json",
         "Parameters": {
           "ApplicationName": "webapp",
-          "AppDomainName": { "Fn::Join": [ ".", [ 
+          "AppDomainName": { "Fn::Join": [ ".", [  
+            "demo",
             {"Fn::If": [ "OmitEnvironmentInDomain", { "Ref": "AWS::NoValue"}, {"Ref": "Environment" } ] },
-            "demo.sandbox.farrellit.net"
+            "sandbox.farrellit.net"
           ] ] },
           "AppValidationDomain": "farrellit.net", 
           "Environment": { "Fn::Sub": "${Environment}" },
