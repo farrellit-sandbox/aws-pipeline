@@ -101,9 +101,20 @@
             
             { "Fn::Sub":["  - docker push ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
             { "Fn::Sub":["  - docker tag ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION ${TargetRepo}:latest", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
-            { "Fn::Sub":["  - docker push ${TargetRepo}:latest", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
+            { "Fn::Sub":["  - docker tag ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION ${TargetRepo}:${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
+            { "Fn::Sub":["  - docker push ${TargetRepo}:latest", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
+            { "Fn::Sub":["  - aws ssm put-parameter --region ${AWS::Region} --parameter-name /build/${TargetRepo}/${GithubBranch} --type String --value ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION  docker push ${TargetRepo}:latest", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
           ] ] }
         }
+      }
+    },
+    "BuildVersionParameter": {
+      "Type": "AWS::SSM::Parameter",
+      "Properties": {
+        "Name": {"Fn::Sub": [ "/build/${TargetRepo}/${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" }  } ] },
+        "Description": {"Fn::Sub": [ "Git SHA tag of Latest successful build of ${TargetRepo}:${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" }  } ] },
+        "Type": "String", 
+        "Value": "0x00"
       }
     },
     "LogGroup": {   
