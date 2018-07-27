@@ -12,9 +12,9 @@
       "Properties" : {
         "HostedZoneConfig" : { "Comment": "Maybe this should be higher level?  Apps may or may not share.  Maybe optional?" },
         "HostedZoneTags" : [  
-          { "Name": "environment", "Value": { "Ref": "Environment" } },
-          { "Name": "app", "Value":   { "Ref": "ApplicationName" } },
-          { "Name": "group", "Value": { "Ref": "ApplicationGroup" } }
+          { "Key": "environment", "Value": { "Ref": "Environment" } },
+          { "Key": "app", "Value":   { "Ref": "ApplicationName" } },
+          { "Key": "group", "Value": { "Ref": "ApplicationGroup" } }
         ],
         "Name" : { "Ref": "DomainName" },
         "QueryLoggingConfig" : {
