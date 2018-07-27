@@ -42,7 +42,7 @@
                     { "Key": "environment", "PropagateAtLaunch": true, "Value": { "Ref": "Environment" } }
                 ],
                 "VPCZoneIdentifier": { "Ref": "AppSubnets" },
-                "TargetGroupARNS": {"Ref": "TargetGroupArns" }
+                "TargetGroupARNs": {"Ref": "TargetGroupArns" }
             },
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "UpdatePolicy": {
