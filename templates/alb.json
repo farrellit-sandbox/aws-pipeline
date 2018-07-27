@@ -32,6 +32,7 @@
     "BackendSecurityGroup": {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
+        "GroupDescription": { "Fn::Sub": "Backends for load balancer ${LoadBalancer}" },
         "SecurityGroupIngress" : [
           { 
             "SourceSecurityGroupId": { "Ref": "SecurityGroup" }, 
@@ -59,6 +60,7 @@
     "SecurityGroup": {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
+        "GroupDescription": { "Fn::Sub": "All web traffic to a load balancer for ${DomainName}" },
         "SecurityGroupIngress" : [
           { "CidrIp": "0.0.0.0/0", "FromPort": "80", "ToPort": "80", "IpProtocol": "tcp" },
           { "CidrIp": "0.0.0.0/0", "FromPort": "443", "ToPort": "443", "IpProtocol": "tcp"  }
