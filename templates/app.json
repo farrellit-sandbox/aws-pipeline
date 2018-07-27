@@ -99,14 +99,16 @@
             { "Fn::Sub":["  - docker build -t ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION -f ${DockerFile} ${DockerDir}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
             ] },
             
-            { "Fn::Sub":["  - docker push ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
+            { "Fn::Sub":["  - docker push ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
+            { "Fn::Sub":["  - docker tag ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION ${TargetRepo}:latest", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
+            { "Fn::Sub":["  - docker push ${TargetRepo}:latest", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
           ] ] }
         }
       }
     },
     "LogGroup": {   
       "Properties": {
-        "LogGroupName": { "Fn::Sub": "X-${Environment}-${ApplicationName}" },
+        "LogGroupName": { "Fn::Sub": "${Environment}-${ApplicationName}" },
         "RetentionInDays": { "Ref": "LogRetentionInDays" }
       },
       "Type": "AWS::Logs::LogGroup"
