@@ -77,7 +77,7 @@
           "DNSName" : { "Fn::GetAtt": [ "LoadBalancer", "DNSName" ] }, "EvaluateTargetHealth" : false, "HostedZoneId" : { "Fn::GetAtt": [ "LoadBalancer", "CanonicalHostedZoneID" ] } }, 
         "HostedZoneId" : { "Ref": "HostedZoneId" },
         "Name" : { "Fn::Sub": "${DomainName}." },
-        "SetIdentifier" : {"Ref": "AWS::StackId" },
+        "SetIdentifier" : {"Fn::GetAtt": [ "LoadBalancer", "LoadBalancerFullName" ] },
         "Type" : "A",
         "Weight" : 100
       }
