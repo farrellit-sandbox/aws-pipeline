@@ -4,10 +4,15 @@
     "Environment": {"Type": "String" },
     "ApplicationName": { "Type": "String" } ,
     "ApplicationGroup": { "Type": "String" },
-    "QueryLogArn": { "Type": "String", "Default": "" }
+    "QueryLogArn": { "Type": "String", "Default": "" }, 
+    "DelegationZoneId": { "Type": "String", "Default": "", "Description": "So delegation records can be created" },
+    "DelegationZone": { "Type": "String", "Default": "", "Description": "So delegation records can be created" }
   },
   "Conditions": { 
-    "LogQueries": { "Fn::Not": [ { "Fn::Equals" : [ {"Ref": "QueryLogArn" }, "" ] } ] }
+    "LogQueries": { "Fn::Not": [ { "Fn::Equals" : [ {"Ref": "QueryLogArn" }, "" ] } ] },
+    "DelegateId": { "Fn::Not": [ { "Fn::Equals" : [ {"Ref": "DelegationZoneId" }, "" ] } ] },
+    "DelegateZone": { "Fn::And":  [ { "Fn::Not": [ { "Condition": "DelegateId" }  ]  }, { "Fn::Not": [ { "Fn::Equals" : [ {"Ref": "DelegationZone" }, "" ] } ] }  ] },
+    "DelegationRecords": { "Fn::Or": [  { "Condition": "DelegateId" }, { "Condition": "DelegateZone" } ] }
   },
   "Resources": {
     "HostedZone": {
@@ -25,12 +30,29 @@
           { "Ref": "AWS::NoValue" }
         ] }
       }
+    },
+    "DelegationRecord": {
+      "Condition": "DelegationRecords",
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "Comment": { "Fn::Sub": "Delegation records for ${DomainName}" },
+        "HostedZoneId" : { "Fn::If": [ "DelegateId", { "Ref": "DelegationZoneId" }, { "Ref": "AWS::NoValue" } ] },
+        "HostedZoneName" : { "Fn::If": [ "DelegateZone", { "Ref": "DelegationZone" }, { "Ref": "AWS::NoValue" } ] },
+        "Name" : { "Fn::Sub": "${DomainName}." },
+        "Type" : "NS",
+        "TTL": "900",
+        "ResourceRecords": {"Fn::GetAtt": [ "HostedZone", "NameServers" ] }
+      }
     }
   },
   "Outputs": {
     "HostedZoneId": { 
       "Value": { "Ref": "HostedZone" },
       "Export": {"Name": { "Fn::Sub": "${AWS::StackName}:HostedZoneId" } } 
+    },
+    "HostedZoneNameServers": { 
+      "Value": { "Fn::Join": [ ",", { "Fn::GetAtt": [ "HostedZone", "NameServers" ] } ] },
+      "Export": {"Name": { "Fn::Sub": "${AWS::StackName}:HostedZoneNameServers" } } 
     }
   }
 }

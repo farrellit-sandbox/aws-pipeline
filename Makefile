@@ -1,5 +1,8 @@
 # run this with the proper keys!
 
+iterate: test
+	git add -u && git commit -v && git push
+
 test: build-test
 	docker run --rm -v `pwd`:/code test-publish-templates
 

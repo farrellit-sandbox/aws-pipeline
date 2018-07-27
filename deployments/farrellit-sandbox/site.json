@@ -84,7 +84,8 @@
           "GithubOwner": "farrellit-sandbox",
           "GithubRepo": "demo-docker-app",
           "GithubBranch": "master",
-          "VpcId": { "Fn::GetAtt": [ "Vpc", "Outputs.VpcId" ] }
+          "VpcId": { "Fn::GetAtt": [ "Vpc", "Outputs.VpcId" ] },
+          "DelegationZone": "sandbox.farrellit.net" 
         }
       }
     }

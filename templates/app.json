@@ -17,7 +17,9 @@
     "SourceRepositoryArn": { "Type": "String", "Description": "How could we figure this out", "Default": "" },
     "DockerDir": { "Type": "String", "Default": "." },
     "DockerFile": { "Type": "String", "Default": "Dockerfile" },
-    "RepositoryName": { "Type": "String", "Default": "" }
+    "RepositoryName": { "Type": "String", "Default": "" },
+    "DelegationZoneId": { "Type": "String", "Default": "", "Description": "So delegation records can be created" },
+    "DelegationZone": { "Type": "String", "Default": "", "Description": "So delegation records can be created" }
   },
   "Conditions": {
     "Debug": { "Fn::Equals": [ "True", "False" ] },
@@ -115,7 +117,9 @@
           "DomainName": { "Ref": "AppDomainName" },
           "ApplicationName": { "Ref": "ApplicationName" },
           "ApplicationGroup": { "Ref": "ApplicationGroup" },
-          "Environment": { "Ref": "Environment" }
+          "Environment": { "Ref": "Environment" },
+          "DelegationZoneId": { "Ref": "DelegationZoneId"},
+          "DelegationZone": { "Ref": "DelegationZone"}
         }
       }
     },

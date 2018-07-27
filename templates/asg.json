@@ -77,7 +77,8 @@
                   "yum update -y",
                   "yum install -y docker",
                   "sudo service docker start",
-                  "# until docker ps; do sleep 1; done ## leaving this out for now", 
+                  "until docker ps; do sleep 1; done", 
+                  "until aws sts get-caller-identity; do sleep 1; done",
                   "# get instance id for logging",
                   "export INSTANCE_ID=\"`curl 169.254.169.254/latest/meta-data/instance-id`\"",
                   "#determine whether we need no-include-email",
@@ -145,7 +146,10 @@
                                         "ecr:GetDownloadUrlForLayer"
                                     ],
                                     "Effect": "Allow",
-                                    "Resource": [ { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${RepositoryName}" } ]
+                                    "Resource": [ 
+                                      { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${RepositoryName}" },
+                                      { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${RepositoryName}:*" } 
+                                    ]
                                 },
                                 {
                                     "Action": [
