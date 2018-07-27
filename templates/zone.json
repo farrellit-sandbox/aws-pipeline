@@ -1,0 +1,26 @@
+{ 
+  "Parameters": {
+    "DomainName": { "Type": "String", "Description": "(Really a CSV<SubnetId>)" },
+    "Environment": {"Type": "String" },
+    "ApplicationName": { "Type": "String" } ,
+    "ApplicationGroup": { "Type": "String" },
+    "QueryLogArn": { "Type": "String" }
+  },
+  "Resources": {
+    "HostedZone": {
+      "Type" : "AWS::Route53::HostedZone",
+      "Properties" : {
+        "HostedZoneConfig" : { "Comment": "Maybe this should be higher level?  Apps may or may not share.  Maybe optional?" },
+        "HostedZoneTags" : [  
+          { "Name": "environment", "Value": { "Ref": "Environment" } },
+          { "Name": "app", "Value":   { "Ref": "ApplicationName" } },
+          { "Name": "group", "Value": { "Ref": "ApplicationGroup" } }
+        ],
+        "Name" : { "Ref": "DomainName" },
+        "QueryLoggingConfig" : {
+          "CloudWatchLogsLogGroupArn" : { "Ref": "QueryLogArn" }
+        }
+      }
+    }
+  }
+}

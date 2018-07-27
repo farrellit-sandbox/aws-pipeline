@@ -62,7 +62,7 @@
     "DefaultListener": {
       "Type" : "AWS::ElasticLoadBalancingV2::Listener",
       "Properties" : {
-        "Certificates" : [ { "Ref": "Certificate" } ],
+        "Certificates" : [ { "CertificateArn": { "Ref": "Certificate" } } ],
         "DefaultActions" : [ { "TargetGroupArn": {"Ref":"DefaultTargetGroup"}, "Type": "forward" } ],
         "LoadBalancerArn" : { "Ref": "LoadBalancer" },
         "Port" : 443,

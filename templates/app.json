@@ -107,6 +107,19 @@
       },
       "Type": "AWS::Logs::LogGroup"
     },
+    "HostedZone": {
+      "Type": "AWS::CloudFormation::Stack", 
+      "Properties": {
+        "TemplateURL": "file://templates/zone.json",
+        "Parameters": {
+          "QueryLogArn": { "Fn::GetAtt": [ "LogGroup", "Arn" ] },
+          "DomainName": { "Ref": "AppDomainName" },
+          "ApplicationName": { "Ref": "ApplicationName" },
+          "ApplicationGroup": { "Ref": "ApplicationGroup" },
+          "Environment": { "Ref": "Environment" }
+        }
+      }
+    },
     "ALB": { 
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": {
