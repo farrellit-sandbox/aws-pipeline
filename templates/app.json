@@ -19,7 +19,8 @@
     "DockerFile": { "Type": "String", "Default": "Dockerfile" },
     "RepositoryName": { "Type": "String", "Default": "" },
     "DelegationZoneId": { "Type": "String", "Default": "", "Description": "So delegation records can be created" },
-    "DelegationZone": { "Type": "String", "Default": "", "Description": "So delegation records can be created" }
+    "DelegationZone": { "Type": "String", "Default": "", "Description": "So delegation records can be created" },
+    "DockerPort": {"Type": "String", "Default": "80", "Description": "Open this port for the docker container" }
   },
   "Conditions": {
     "Debug": { "Fn::Equals": [ "True", "False" ] },
@@ -146,6 +147,7 @@
           "ApplicationName": { "Ref": "ApplicationName" },
           "Environment": { "Ref": "Environment" },
           "AppSubnets": { "Ref": "AppSubnets" },
+          "DockerPort": { "Ref": "DockerPort" },
           "RepositoryName": { "Ref": "ImageRepo" },
           "ImageTag": "latest",
           "ImageId": { "Ref": "ImageId" },
