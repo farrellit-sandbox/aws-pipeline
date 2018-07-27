@@ -1,4 +1,5 @@
 { 
+  "Description": "Want to add a site level ASG hosted zone that I can share across the site, then make imbedded ones optional", 
   "Parameters": {
     "VpcCidrBlock": { "Type": "String" },
     "Zone1ExternalCidr": { "Type": "String" },

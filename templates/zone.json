@@ -26,5 +26,11 @@
         ] }
       }
     }
+  },
+  "Outputs": {
+    "HostedZoneId": { 
+      "Value": { "Ref": "HostedZone" },
+      "Export": {"Name": { "Fn::Sub": "${AWS::StackName}:HostedZoneId" } } 
+    }
   }
 }

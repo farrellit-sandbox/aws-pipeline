@@ -5,8 +5,9 @@
     "Scheme": { "Type": "String", "AllowedValues": [ "internal", "internet-facing" ], "Default": "internet-facing" },
     "ApplicationName": { "Type": "String" },
     "Environment": { "Type": "String" },
-    "DomainName": { "Type": "String" },
+    "DomainName": { "Type": "String", "AllowedPattern": "^.*[^.]$", "Description": "Shouldn't end in a dot" },
     "ValidationDomain": { "Type": "String" },
+    "HostedZoneId": { "Type": "String" },
     "HealthCheckPath": {"Type": "String", "Default": "/" },
     "HealthCheckPort": { "Type": "Number", "Default": "0" },
     "HealthCheckProtocol": { "Type": "String", "Default": "HTTP" },
@@ -68,6 +69,18 @@
         "Port" : 443,
         "Protocol" : "HTTPS"
       }
-    } 
+    },
+    "DnsRecord": {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "AliasTarget" : { 
+          "DNSName" : { "Fn::GetAtt": [ "LoadBalancer", "DNSName" ] }, "EvaluateTargetHealth" : false, "HostedZoneId" : { "Fn::GetAtt": [ "LoadBalancer", "CanonicalHostedZoneID" ] } }, 
+        "HostedZoneId" : { "Ref": "HostedZoneId" },
+        "Name" : { "Fn::Sub": "${DomainName}." },
+        "SetIdentifier" : {"Ref": "AWS::StackId" },
+        "Type" : "A",
+        "Weight" : 100
+      }
+    }
   }
 }

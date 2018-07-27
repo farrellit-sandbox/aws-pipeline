@@ -129,7 +129,8 @@
           "Subnets": { "Ref": "LoadBalancerSubnets" },
           "VpcId": { "Ref": "VpcId" },
           "DomainName": { "Ref": "AppDomainName" },
-          "ValidationDomain": { "Ref": "AppValidationDomain" }
+          "ValidationDomain": { "Ref": "AppValidationDomain" },
+          "HostedZoneId": { "Fn::GetAtt": [ "HostedZone", "Outputs.HostedZoneId" ] } 
         }
       }
     },
