@@ -1,11 +1,14 @@
 { 
   "Parameters": {
+    "AppSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId>)" },
+    "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId>)" },
+    "VpcId": {"Type": "String", "Description": "Really a AWS::EC2::VpcId" },
     "ApplicationName": {"Type": "String" , "Description": "Must be lowercase" },
     "ApplicationGroup": { "Type": "String","Description": "Must be lowercase"  },
+    "AppDomainName": { "Type": "String" },
+    "AppValidationDomain": { "Type": "String" },
     "Environment": { "Type": "String" },
-    "AppSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId>)" },
     "LogRetentionInDays": { "Type": "Number", "Default": "14" },
-    "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId>)" },
     "ImageId": { "Type": "String" },
     "GithubOwner": { "Type": "String", "Default": "" },
     "GithubRepo": { "Type": "String", "Default": "" },
@@ -99,7 +102,7 @@
     },
     "LogGroup": {   
       "Properties": {
-        "LogGroupName": { "Fn::Sub": "X-${Environment}-${ApplicationName}" },
+        "LogGroupName": { "Fn::Sub": "${Environment}-${ApplicationName}" },
         "RetentionInDays": { "Ref": "LogRetentionInDays" }
       },
       "Type": "AWS::Logs::LogGroup"
@@ -111,7 +114,10 @@
         "Parameters": {
           "ApplicationName": { "Ref": "ApplicationName" },
           "Environment": { "Ref": "Environment" },
-          "Subnets": { "Ref": "LoadBalancerSubnets" }
+          "Subnets": { "Ref": "LoadBalancerSubnets" },
+          "VpcId": { "Ref": "VpcId" },
+          "DomainName": { "Ref": "AppDomainName" },
+          "ValidationDomain": { "Ref": "AppValidationDomain" }
         }
       }
     },
@@ -127,7 +133,7 @@
           "ImageTag": "latest",
           "ImageId": { "Ref": "ImageId" },
           "LogGroupName": { "Ref": "LogGroup" },
-          "LogGroupArn:": { "Fn::GetAtt": [ "LogGroup", "Arn" ] }
+          "LogGroupArn": { "Fn::GetAtt": [ "LogGroup", "Arn" ] }
         }
       }
     }

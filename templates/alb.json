@@ -1,12 +1,22 @@
 {
   "Parameters": {
+    "VpcId": { "Type": "AWS::EC2::VPC::Id" },
     "Subnets": { "Type": "List<AWS::EC2::Subnet::Id>" },
     "Scheme": { "Type": "String", "AllowedValues": [ "internal", "internet-facing" ], "Default": "internet-facing" },
     "ApplicationName": { "Type": "String" },
-    "Environment": { "Type": "String" }
+    "Environment": { "Type": "String" },
+    "DomainName": { "Type": "String" },
+    "ValidationDomain": { "Type": "String" },
+    "HealthCheckPath": {"Type": "String", "Default": "/" },
+    "HealthCheckPort": { "Type": "Number", "Default": "0" },
+    "HealthCheckProtocol": { "Type": "String", "Default": "HTTP" },
+    "AppTargetPort": { "Type": "Number" , "Default": 80 }
+  },
+  "Conditions": {
+    "SeparateHealthCheckPort": { "Fn::Not": [ { "Fn::Equals": [ "HealthCheckPort", "0" ] } ] } 
   },
   "Resources": {
-    "loadBalancer": {
+    "LoadBalancer": {
       "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties": {
         "Type": "application",
@@ -17,6 +27,47 @@
           { "Key": "environment", "Value": { "Ref": "Environment" } }
         ]
       }
-    }
+    },
+    "Certificate": {
+      "Type" : "AWS::CertificateManager::Certificate",
+      "Properties" : {
+        "DomainName" : { "Ref": "DomainName" },
+        "DomainValidationOptions" : [ { "DomainName": { "Ref":"DomainName" }, "ValidationDomain": { "Ref": "ValidationDomain" } } ],
+        "Tags" : [  
+          { "Key": "app", "Value": { "Ref": "ApplicationName" } },
+          { "Key": "environment", "Value": { "Ref": "Environment" } }
+        ]
+      }
+    },
+    "DefaultTargetGroup": {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+        "HealthCheckIntervalSeconds" : 30,
+        "HealthCheckPath" : { "Ref": "HealthCheckPath" },
+        "HealthCheckPort" : { "Fn::If": [ "SeparateHealthCheckPort", { "Ref": "HealthCheckPort" }, {"Ref":"AppTargetPort" } ] },
+        "HealthCheckProtocol" : {"Ref":"HealthCheckProtocol" },
+        "HealthCheckTimeoutSeconds" : 10,
+        "HealthyThresholdCount" : 5,
+        "UnhealthyThresholdCount" : 3,
+        "Matcher" : { "HttpCode": "200" } ,
+        "Port": {"Ref":"AppTargetPort" },
+        "Protocol" : "HTTP",
+        "Tags" : [  
+          { "Key": "app", "Value": { "Ref": "ApplicationName" } },
+          { "Key": "environment", "Value": { "Ref": "Environment" } }
+        ],
+        "VpcId" :  {"Ref":"VpcId"}
+      }
+    },
+    "DefaultListener": {
+      "Type" : "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties" : {
+        "Certificates" : [ { "Ref": "Certificate" } ],
+        "DefaultActions" : [ { "TargetGroupArn": {"Ref":"DefaultTargetGroup"}, "Type": "forward" } ],
+        "LoadBalancerArn" : { "Ref": "LoadBalancer" },
+        "Port" : 443,
+        "Protocol" : "HTTPS"
+      }
+    } 
   }
 }

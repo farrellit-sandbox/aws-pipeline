@@ -180,6 +180,7 @@
     }
   },
   "Outputs": {
+    "VpcId": { "Value": { "Ref": "VPC" }, "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:VpcId" } } },
     "InternalSubnets": {
       "Value": { "Fn::Join": [ ",", [ 
           { "Fn::If": [ "Zone1Enabled", { "Fn::GetAtt": [ "Zone1", "Outputs.InternalSubnet" ] } , { "Ref": "AWS::NoValue" } ] },
