@@ -29,16 +29,25 @@
         ]
       }
     },
-
-    "SecurityGroup": {
+    "BackendSecurityGroup": {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
         "SecurityGroupIngress" : [
-          { "CidrIp": "0.0.0.0/0", "FromPort": "80", "ToPort": "80" },
-          { "CidrIp": "0.0.0.0/0", "FromPort": "443", "ToPort": "443" }
-        ],
-        "SecurityGroupEgress" : [
-          { "CidrIp": "127.0.0.1/32", "FromPort": "1", "ToPort": "1" }
+          { 
+            "SourceSecurityGroupId": { "Ref": "SecurityGroup" }, 
+            "FromPort": {"Ref":"AppTargetPort"}, 
+            "ToPort": {"Ref":"AppTargetPort"}, 
+            "IpProtocol": "tcp" 
+          },
+          { "Fn::If": [ "SeparateHealthCheckPort",
+            { 
+              "SourceSecurityGroupId": { "Ref": "SecurityGroup" }, 
+              "FromPort": {"Ref":"HealthCheckPort"}, 
+              "ToPort": {"Ref":"HealthCheckPort"}, 
+              "IpProtocol": "tcp" 
+            },
+            {"Ref":"AWS::NoValue" } 
+          ] }
         ],
         "Tags": [ 
           { "Key": "app", "Value": { "Ref": "ApplicationName" } },
@@ -47,7 +56,46 @@
         "VpcId" : {"Ref": "VpcId" }
       }
     },
-
+    "SecurityGroup": {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "SecurityGroupIngress" : [
+          { "CidrIp": "0.0.0.0/0", "FromPort": "80", "ToPort": "80", "IpProtocol": "tcp" },
+          { "CidrIp": "0.0.0.0/0", "FromPort": "443", "ToPort": "443", "IpProtocol": "tcp"  }
+        ],
+        "SecurityGroupEgress" : [
+          { "CidrIp": "127.0.0.1/32", "FromPort": "1", "ToPort": "1", "IpProtocol": "tcp"  }
+        ],
+        "Tags": [ 
+          { "Key": "app", "Value": { "Ref": "ApplicationName" } },
+          { "Key": "environment", "Value": { "Ref": "Environment" } }
+        ],
+        "VpcId" : {"Ref": "VpcId" }
+      }
+    },
+    "HealthCheckEgress": {
+      "Condition": "SeparateHealthCheckPort",
+      "Type" : "AWS::EC2::SecurityGroupEgress",
+      "Properties" : {
+        "Description" : "Connect to these backends",
+        "DestinationSecurityGroupId" : {"Ref":"BackendSecurityGroup" },
+        "FromPort": {"Ref":"HealthCheckPort"},
+        "GroupId" : {"Ref": "SecurityGroup"},
+        "IpProtocol" : "tcp",
+        "ToPort": {"Ref":"HealthCheckPort"}
+      }
+    },
+    "TargetPortEgress": {
+      "Type" : "AWS::EC2::SecurityGroupEgress",
+      "Properties" : {
+        "Description" : "Connect to these backends",
+        "DestinationSecurityGroupId" : {"Ref":"BackendSecurityGroup" },
+        "FromPort": {"Ref":"AppTargetPort"},
+        "GroupId" : {"Ref": "SecurityGroup"},
+        "IpProtocol" : "tcp",
+        "ToPort": {"Ref":"AppTargetPort"}
+      }
+    },
     "Certificate": {
       "Type" : "AWS::CertificateManager::Certificate",
       "Properties" : {
@@ -103,8 +151,8 @@
     }
   },
   "Outputs": { 
-    "SecurityGroup": {
-      "Value": { "Ref": "SecurityGroup" }
-    }
+    "SecurityGroup": { "Value": { "Ref": "SecurityGroup" } },
+    "BackendSecurityGroup": { "Value": { "Ref": "BackendSecurityGroup" } },
+    "TargetGroupArn": { "Value": { "Ref": "DefaultTargetGroup" } }
   }
 }

@@ -1,5 +1,5 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
+  "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "A stack that, given an ECR repo, can create an ASG and launch config",
     "Parameters": {
         "RepositoryName": {
@@ -16,15 +16,18 @@
         "KeyName": { "Type": "String", "Default": "" },
         "ImageId": { "Type": "String", "Default": "" },
         "DockerExtra": { "Type": "String", "Description": "Extra arguments for docker", "Default": "" },
+        "DockerPort": { "Type": "String", "Description": "Port to open" },
         "InstanceType": { "Type": "String", "Default": "t2.nano" },
         "LogGroupName": { "Type": "String"}, 
-        "LogGroupArn": { "Type": "String"}
-    },
-    "Conditions": {
+        "LogGroupArn": { "Type": "String"},
+        "TargetGroupArns": { "Type": "CommaDelimitedList" , "Default": "" },
+        "TargetSecurityGroup": { "Type": "String" , "Default": "" }
+  },
+  "Conditions": {
       "OmitSshKey": { "Fn::Equals": [ { "Ref": "KeyName" } , "" ] },
       "OmitDockerExtra": { "Fn::Equals": [ { "Ref": "DockerExtra" } , "" ] }
-    },
-    "Resources": {
+  },
+  "Resources": {
         "ApplicationASG": {
             "Properties": {
                 "Cooldown": "90",
@@ -38,7 +41,8 @@
                     { "Key": "app", "PropagateAtLaunch": true, "Value": { "Ref": "ApplicationName" } },
                     { "Key": "environment", "PropagateAtLaunch": true, "Value": { "Ref": "Environment" } }
                 ],
-                "VPCZoneIdentifier": { "Ref": "AppSubnets" }
+                "VPCZoneIdentifier": { "Ref": "AppSubnets" },
+                "TargetGroupARNS": {"Ref": "TargetGroupArns" }
             },
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "UpdatePolicy": {
@@ -63,7 +67,7 @@
                 "ImageId": { "Ref": "ImageId" },
                 "InstanceType":  { "Ref": "InstanceType" },
                 "KeyName": { "Fn::If": [ "OmitSshKey", {"Ref": "AWS::NoValue" }, { "Ref": "KeyName" } ] },
-                "SecurityGroups":  [],
+                "SecurityGroups":  [ {"Ref": "TargetSecurityGroup" }],
                 "UserData": { "Fn::Base64": { "Fn::Join": [ "\n", [
                   "#!/bin/bash -ex",
                   "function finish { ",
@@ -95,6 +99,7 @@
                   {"Fn::Sub": "  -e AWS_REGION=${AWS::Region} \\"},
                   {"Fn::Sub": "  -e AWS_STACK_NAME=${AWS::StackName} \\"},
                   {"Fn::Sub": "  -e AWS_STACK_ID=${AWS::StackId} \\"},
+                  {"Fn::Sub": "  -p ${DockerPort}:${DockerPort} \\"},
                   { "Fn::If": [ "OmitDockerExtra", { "Ref": "AWS::NoValue" }, {"Fn::Sub": "${DockerExtra} \\"} ] },
                   {"Fn::Sub": " ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryName}:${ImageTag}"},
                   "finish 0"

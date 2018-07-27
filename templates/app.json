@@ -150,7 +150,9 @@
           "ImageTag": "latest",
           "ImageId": { "Ref": "ImageId" },
           "LogGroupName": { "Ref": "LogGroup" },
-          "LogGroupArn": { "Fn::GetAtt": [ "LogGroup", "Arn" ] }
+          "LogGroupArn": { "Fn::GetAtt": [ "LogGroup", "Arn" ] },
+          "TargetSecurityGroup": { "Fn::GetAtt": [ "ALB", "Outputs.BackendSecurityGroup" ] },
+          "TargetGroupArns": { "Fn::GetAtt": [ "ALB", "Outputs.TargetGroupArn" ] }
         }
       }
     }
