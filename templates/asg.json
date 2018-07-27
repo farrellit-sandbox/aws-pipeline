@@ -88,7 +88,7 @@
                   { "Fn::Sub": "    --log-opt tag=\"${Environment}-${ApplicationName}/$INSTANCE_ID/{{.ID}}\" \\" },
                   { "Fn::Sub": "    --log-opt awslogs-region=${AWS::Region} \\" },
                   { "Fn::Sub": "    --log-opt awslogs-group=${LogGroupName} \\" },
-                  "  --restart=always",
+                  "  --restart=always \\",
                   {"Fn::Sub": "  -e AWS_REGION=${AWS::Region} \\"},
                   {"Fn::Sub": "  -e AWS_STACK_NAME=${AWS::StackName} \\"},
                   {"Fn::Sub": "  -e AWS_STACK_ID=${AWS::StackId} \\"},
