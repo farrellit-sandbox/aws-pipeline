@@ -20,7 +20,8 @@
     "RepositoryName": { "Type": "String", "Default": "" },
     "DelegationZoneId": { "Type": "String", "Default": "", "Description": "So delegation records can be created" },
     "DelegationZone": { "Type": "String", "Default": "", "Description": "So delegation records can be created" },
-    "DockerPort": {"Type": "String", "Default": "80", "Description": "Open this port for the docker container" }
+    "DockerPort": {"Type": "String", "Default": "80", "Description": "Open this port for the docker container" },
+    "KeyName": {"Type": "String", "Default": "" }
   },
   "Conditions": {
     "Debug": { "Fn::Equals": [ "True", "False" ] },
@@ -154,7 +155,8 @@
           "LogGroupName": { "Ref": "LogGroup" },
           "LogGroupArn": { "Fn::GetAtt": [ "LogGroup", "Arn" ] },
           "TargetSecurityGroup": { "Fn::GetAtt": [ "ALB", "Outputs.BackendSecurityGroup" ] },
-          "TargetGroupArns": { "Fn::GetAtt": [ "ALB", "Outputs.TargetGroupArn" ] }
+          "TargetGroupArns": { "Fn::GetAtt": [ "ALB", "Outputs.TargetGroupArn" ] },
+          "KeyName": { "Ref": "KeyName" }
         }
       }
     }
