@@ -29,6 +29,25 @@
         ]
       }
     },
+
+    "SecurityGroup": {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "SecurityGroupIngress" : [
+          { "CidrIp": "0.0.0.0/0", "FromPort": "80", "ToPort": "80" },
+          { "CidrIp": "0.0.0.0/0", "FromPort": "443", "ToPort": "443" }
+        ],
+        "SecurityGroupEgress" : [
+          { "CidrIp": "127.0.0.1/32", "FromPort": "1", "ToPort": "1" }
+        ],
+        "Tags": [ 
+          { "Key": "app", "Value": { "Ref": "ApplicationName" } },
+          { "Key": "environment", "Value": { "Ref": "Environment" } }
+        ],
+        "VpcId" : {"Ref": "VpcId" }
+      }
+    },
+
     "Certificate": {
       "Type" : "AWS::CertificateManager::Certificate",
       "Properties" : {
@@ -81,6 +100,11 @@
         "Type" : "A",
         "Weight" : 100
       }
+    }
+  },
+  "Outputs": { 
+    "SecurityGroup": {
+      "Value": { "Ref": "SecurityGroup" }
     }
   }
 }
