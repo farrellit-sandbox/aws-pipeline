@@ -3,8 +3,8 @@
     "ApplicationName": {"Type": "String" , "Description": "Must be lowercase" },
     "ApplicationGroup": { "Type": "String","Description": "Must be lowercase"  },
     "Environment": { "Type": "String" },
-    "AppSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" },
-    "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" },
+    "AppSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId>)" },
+    "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId>)" },
     "ImageId": { "Type": "String" },
     "GithubOwner": { "Type": "String", "Default": "" },
     "GithubRepo": { "Type": "String", "Default": "" },
@@ -101,6 +101,7 @@
       "Properties": {
         "TemplateURL": "file://templates/asg.json",
         "Parameters": {
+          "ApplicationName": { "Ref": "ApplicationName" },
           "Environment": { "Ref": "Environment" },
           "AppSubnets": { "Ref": "AppSubnets" },
           "LoadBalancerSubnets": { "Ref": "LoadBalancerSubnets" },
