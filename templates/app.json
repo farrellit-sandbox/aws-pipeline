@@ -102,7 +102,7 @@
     },
     "LogGroup": {   
       "Properties": {
-        "LogGroupName": { "Fn::Sub": "${Environment}-${ApplicationName}" },
+        "LogGroupName": { "Fn::Sub": "X-${Environment}-${ApplicationName}" },
         "RetentionInDays": { "Ref": "LogRetentionInDays" }
       },
       "Type": "AWS::Logs::LogGroup"
