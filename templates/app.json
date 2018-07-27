@@ -9,14 +9,15 @@
     "GithubOwner": { "Type": "String", "Default": "" },
     "GithubRepo": { "Type": "String", "Default": "" },
     "GithubBranch": { "Type": "String", "Default": "master" },
-    "SourceRepository": { "Type": "String", "Description": "Applies when we're not building it ourself" },
+    "SourceRepository": { "Type": "String", "Description": "Applies when we're not building it ourself", "Default": "" },
     "DockerDir": { "Type": "String", "Default": "." },
     "DockerFile": { "Type": "String", "Default": "Dockerfile" },
     "RepositoryName": { "Type": "String", "Default": "" }
   },
   "Conditions": {
     "Debug": { "Fn::Equals": [ "True", "False" ] },
-    "UseRepositoryName": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "RepositoryName" }, "" ] } ] }
+    "UseRepositoryName": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "RepositoryName" }, "" ] } ] },
+    "HasSourceRepository": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "SourceRepository" }, "" ] } ] }
   },
   "Resources": {
     "ImageRepo": {
@@ -43,7 +44,7 @@
             " install:",
             "  commands:",
             "  - aws ecr get-login --no-include-email | sh" , 
-            { "Fn::If": [ "SourceRepository", { "Fn::Join": [ "\n", [
+            { "Fn::If": [ "HasSourceRepository", { "Fn::Join": [ "\n", [
             { "Fn::Sub": "  - docker pull ${SourceRepository}" },
             { "Fn::Sub":["  - docker tag ${SourceRepository} ${TargetRepo}" , { "TargetRepo": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DiscoverRepository}:${DiscoverTag}"  } ] }
             ] ] }, 
