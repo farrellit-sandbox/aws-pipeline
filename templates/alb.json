@@ -1,0 +1,22 @@
+{
+  "Parameters": {
+    "Subnets": { "Type": "List<AWS::EC2::Subnet::Id>" },
+    "Scheme": { "Type": "String", "AllowedValues": [ "internal", "internet-facing" ], "Default": "internet-facing" },
+    "ApplicationName": { "Type": "String" },
+    "Environment": { "Type": "String" }
+  },
+  "Resources": {
+    "loadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Type": "application",
+        "Scheme": { "Ref": "Scheme" },
+        "Subnets": { "Ref": "Subnets" },
+        "Tags": [ 
+          { "Key": "app", "Value": { "Ref": "ApplicationName" } },
+          { "Key": "environment", "Value": { "Ref": "Environment" } }
+        ]
+      }
+    }
+  }
+}
