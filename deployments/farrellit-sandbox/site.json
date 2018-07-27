@@ -74,7 +74,10 @@
           "ApplicationGroup": "farrellit-demo",
           "AppSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.InternalSubnets" ] },
           "LoadBalancerSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
-          "ImageId": "ami-8c122be9" 
+          "ImageId": "ami-8c122be9",
+          "GithubOwner": "farrellit-sandbox",
+          "GithbRepo": "demo-docker-app",
+          "GithubBranch": "master"
         }
       }
     }

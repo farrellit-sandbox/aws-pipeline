@@ -61,7 +61,7 @@
       "Type": "AWS::EC2::EIP"
     }, 
     "DedicatedNatGateway": { 
-      "Condition": "CreateNat" , 
+      "Condition": "CreateNat", 
       "Properties": {
         "AllocationId": { "Fn::GetAtt": [ "DedicatedNatGatewayEIP", "AllocationId" ] },
         "SubnetId": { "Ref": "ExternalSubnet" }

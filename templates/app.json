@@ -1,27 +1,62 @@
 { 
   "Parameters": {
     "ApplicationName": {"Type": "String" , "Description": "Must be lowercase" },
-    "RepositoryName": { "Type": "String", "Default": "" , "Description": "Must be lowercase" },
-    "CreateRepository": { "Type": "String", "Default": "True", "Description": "Whether to create a repo or just assume it exists" },
     "ApplicationGroup": { "Type": "String","Description": "Must be lowercase"  },
     "Environment": { "Type": "String" },
     "AppSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" },
     "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId))" },
-    "ImageId": { "Type": "String" }
+    "ImageId": { "Type": "String" },
+    "GithubOwner": { "Type": "String", "Default": "" },
+    "GithubRepo": { "Type": "String", "Default": "" },
+    "GithubBranch": { "Type": "String", "Default": "master" },
+    "SourceRepository": { "Type": "String", "Description": "Applies when we're not building it ourself" },
+    "DockerDir": { "Type": "String", "Default": "." },
+    "DockerFile": { "Type": "String", "Default": "Dockerfile" },
+    "RepositoryName": { "Type": "String", "Default": "" }
   },
   "Conditions": {
-    "CreateRepository": { "Fn::Equals": [ "True", { "Ref": "CreateRepository" } ] },
+    "Debug": { "Fn::Equals": [ "True", "False" ] },
     "UseRepositoryName": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "RepositoryName" }, "" ] } ] }
   },
   "Resources": {
     "ImageRepo": {
-      "Condition": "CreateRepository",
       "Type": "AWS::ECR::Repository",
       "Properties": {
         "RepositoryName": { "Fn::If": [ "UseRepositoryName", { "Ref": "RepositoryName" }, { "Fn::Sub": "${ApplicationGroup}/${ApplicationName}" } ]  }
       }
     },
+    "ApplicationDockerPipeline": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": { 
+        "TemplateURL": "file://templates/pipeline.json",
+        "Parameters": {
+          "ProjectName": { "Fn::Sub": "${ApplicationGroup}-${ApplicationName}" },
+          "GithubOwner": {  "Ref": "GithubOwner" },
+          "GithubRepo": { "Ref": "GithubRepo" },
+          "GithubBranch": { "Ref": "GithubBranch" },
+          "SiteTemplate": "",
+          "SelfDeployPipeline": "False",
+          "BuildImage": "aws/codebuild/docker:17.09.0",
+          "BuildSpec": { "Fn::Join": [ "\n", [
+            "version: 0.2",
+            "phases:",
+            " install:",
+            "  commands:",
+            "  - aws ecr get-login --no-include-email | sh" , 
+            { "Fn::If": [ "SourceRepository", { "Fn::Join": [ "\n", [
+            { "Fn::Sub": "  - docker pull ${SourceRepository}" },
+            { "Fn::Sub":["  - docker tag ${SourceRepository} ${TargetRepo}" , { "TargetRepo": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DiscoverRepository}:${DiscoverTag}"  } ] }
+            ] ] }, 
+            { "Fn::Sub":["  - docker build -t ${TargetRepo} -f ${DockerFile} ${DockerDir}", { "TargetRepo": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DiscoverRepository}:${DiscoverTag}"  } ] }
+            ] },
+            
+            { "Fn::Sub":["  - docker push ${TargetRepo}", { "TargetRepo": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DiscoverRepository}:${DiscoverTag}"  } ] }
+          ] ] }
+        }
+      }
+    },
     "ApplicationASG": {
+      "Condition": "Debug",
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": {
         "TemplateURL": "file://templates/asg.json",
@@ -29,7 +64,7 @@
           "Environment": { "Ref": "Environment" },
           "AppSubnets": { "Ref": "AppSubnets" },
           "LoadBalancerSubnets": { "Ref": "LoadBalancerSubnets" },
-          "RepositoryName": { "Fn::If": [ "CreateRepository", { "Ref": "ImageRepo" }, { "Ref": "RepositoryName" } ] },
+          "RepositoryName": { "Ref": "ImageRepo" },
           "ImageTag": "latest",
           "ImageId": { "Ref": "ImageId" }
         }

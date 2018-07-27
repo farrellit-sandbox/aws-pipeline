@@ -26,7 +26,7 @@ class FileUrlReplacer:
           sys.stderr.write("Validation error validating template from {path}: {err}.  Template follows...\n{template}\n".format(
             path=path,
             err=str(e),
-            template=normalized_content
+            template=json.dumps(json.loads(normalized_content),indent=2)
           ))
         raise e
     else:
@@ -58,7 +58,11 @@ class FileUrlReplacer:
   def ReplaceFileUrls(self, **kwargs):
     if kwargs.get('path'):
       with open(kwargs['path'], 'r') as fi:
-        data = json.loads(fi.read())
+        try:
+          data = json.loads(fi.read())
+        except (json.decoder.JSONDecodeError ) as e:
+          sys.stderr.write("Failed to parse file {path} as json: {err}\n".format(path=kwargs['path'],err=str(e)))
+          raise e
     elif kwargs.get('data'):
       data = kwargs['data']
       assert isinstance(data,dict)
@@ -74,7 +78,12 @@ class FileUrlReplacer:
           path = m.group(1)
           with open(path,'r') as f:
             content = f.read()
-          subdata = self.ReplaceFileUrls(data=json.loads(content))
+          try: 
+            filedata = json.loads(content)
+          except json.decoder.JSONDecodeError as e:
+            sys.stderr.write("Failed to parse file {path} as json: {err}\n".format(path=path,err=str(e)))
+            raise e
+          subdata = self.ReplaceFileUrls(data=filedata)
           s3url = self.PublishFile(path=path,data=subdata)
           data[k] = s3url
           sys.stderr.write("Replacing {v} with {s3url}\n".format(v=v,s3url=s3url))

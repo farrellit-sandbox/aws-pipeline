@@ -7,9 +7,25 @@
     "GithubBranch":  { "Type": "String", "Description": "Github branch name which autodeploys here ... would like to add gated, remote prod deploy with template diff and exec set" },
     "RepoBuildspecPath": {"Type": "String", "Description": "location of buildspec .yaml", "Default": "buildspec.yml" },
     "BuildOutputStackTemplatePath": {"Type": "String", "Description": "location of stack in output artifact, if any", "Default": "cooked-stack.json" },
-    "SiteTemplate": { "Type": "String", "Description": "The place to start ( it would call other stacks from other templates, setting parameters)" },
-    "SiteConfigurationPath": { "Type": "String", "Description": "Configuration for the site template" },
-    "PipelineTemplateConfigurationPath": { "Type": "String", "Description": "Where are the configurations for this template stored?" }
+    "SiteTemplate": { "Type": "String", "Description": "The place to start ( it would call other stacks from other templates, setting parameters)","Default": "" },
+    "SiteConfigurationPath": { "Type": "String", "Description": "Configuration for the site template", "Default": "" },
+    "PipelineTemplateConfigurationPath": { "Type": "String", "Description": "Where are the configurations for this template stored?", "Default": "" },
+    "SelfDeployPipeline": { 
+      "Type": "String", "Default": "True",
+      "Description": "Set to something other than True to disable self-deployment of pipeline"
+    },
+    "ExtraENV": { 
+      "Description": "Extra environment variables ( syntax/parsing up to the users )",
+      "Type": "String",
+      "Default": ""
+    },
+    "BuildImage": { "Type": "String", "Default": "aws/codebuild/python:3.6.5" },
+    "ComputeType": { "Type": "String", "Default": "BUILD_GENERAL1_SMALL"}
+  },
+  "Conditions": {
+    "SelfDeployPipeline": { "Fn::Equals": [ "True", { "Ref": "SelfDeployPipeline" } ] },
+    "DeployStack": { "Fn::Not": [ { "Fn::Equals": [ "", { "Ref": "SiteTemplate" } ] } ] },
+    "DeployRole": { "Fn::Or": [ { "Condition": "DeployStack" }, { "Condition": "SelfDeployPipeline" } ] }
   },
    "Resources":{
       "Bucket": {
@@ -25,8 +41,8 @@
            },
            "Environment": {
              "Type": "linuxContainer",
-             "ComputeType": "BUILD_GENERAL1_SMALL",
-             "Image": "aws/codebuild/python:3.6.5",
+             "ComputeType": { "Ref":"ComputeType" },
+             "Image": { "Ref": "BuildImage" },
              "EnvironmentVariables": [ 
                {
                  "Name": "BUCKET", 
@@ -42,6 +58,11 @@
                  "Name": "REGION", 
                  "Type": "PLAINTEXT",
                  "Value": { "Ref": "AWS::Region" }
+               },
+               {
+                 "Name": "ExtraENV", 
+                 "Type": "PLAINTEXT",
+                 "Value": { "Ref": "ExtraENV" }
                }
              ]
            },
@@ -119,14 +140,17 @@
                           { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "Bucket", "Arn" ]  }, "/*" ] ] } 
                          ]
                        },
-                       {
-                         "Effect"   : "Allow",
-                         "Action"   : [
-                           "iam:PassRole",
-                           "iam:GetRole*"
-                         ],
-                         "Resource" : { "Fn::GetAtt": [ "DeployRole", "Arn" ] }
-                       }
+                       { "Fn::If": [ "DeployRole", 
+                        {
+                           "Effect"   : "Allow",
+                           "Action"   : [
+                            "iam:PassRole",
+                            "iam:GetRole*"
+                          ],
+                          "Resource" : { "Fn::GetAtt": [ "DeployRole", "Arn" ] }
+                        },
+                        { "Ref": "AWS::NoValue" }
+                       ] }
                      ]
                    }
                  }
@@ -152,6 +176,7 @@
             }
           },
           "DeployRole": {
+            "Condition": "DeployRole",
              "Type": "AWS::IAM::Role",
              "Properties": {
                "Path": "/devops/delivery/",
@@ -216,35 +241,38 @@
                   }
                 ]
               },
-              {
-                "Name":"SelfDeployPipeline",
-                "Actions":[
-                  {
-                    "InputArtifacts":[
-                      {
-                        "Name":"GithubArtifact"
-                      }
-                    ],
-                    "Name": { "Fn::Sub": "${ProjectName}PipelineDeploy" },
-                    "ActionTypeId":{
-                      "Category":"Deploy",
-                      "Owner":"AWS",
-                      "Version":"1",
-                      "Provider":"CloudFormation"
-                    },
-                    "OutputArtifacts":[],
-                    "Configuration":{
-                      "StackName": {"Fn::Sub": "${ProjectName}-Pipeline" },
-                      "ActionMode": "REPLACE_ON_FAILURE",
-                      "RoleArn": { "Fn::GetAtt": [ "DeployRole", "Arn" ] },
-                      "Capabilities":"CAPABILITY_IAM",
-                      "TemplateConfiguration": { "Fn::Sub": "GithubArtifact::${PipelineTemplateConfigurationPath}" },
-                      "TemplatePath": "GithubArtifact::templates/pipeline.json"
-                    },
-                    "RunOrder":1
-                  }
-                ]
-              },
+              { "Fn::If": [ "SelfDeployPieline", 
+                {
+                  "Name":"SelfDeployPipeline",
+                  "Actions":[
+                    {
+                      "InputArtifacts":[
+                        {
+                          "Name":"GithubArtifact"
+                        }
+                      ],
+                      "Name": { "Fn::Sub": "${ProjectName}PipelineDeploy" },
+                      "ActionTypeId":{
+                        "Category":"Deploy",
+                        "Owner":"AWS",
+                        "Version":"1",
+                        "Provider":"CloudFormation"
+                      },
+                      "OutputArtifacts":[],
+                      "Configuration":{
+                        "StackName": {"Fn::Sub": "${ProjectName}-Pipeline" },
+                        "ActionMode": "REPLACE_ON_FAILURE",
+                        "RoleArn": { "Fn::GetAtt": [ "DeployRole", "Arn" ] },
+                        "Capabilities":"CAPABILITY_IAM",
+                        "TemplateConfiguration": { "Fn::Sub": "GithubArtifact::${PipelineTemplateConfigurationPath}" },
+                        "TemplatePath": "GithubArtifact::templates/pipeline.json"
+                      },
+                      "RunOrder":1
+                    }
+                  ]
+                },
+                { "Ref": "AWS::NoValue" }
+              ] },
               {
                 "Name":"Build",
                 "Actions":[
@@ -269,38 +297,41 @@
                   }
                 ]
               },
-              {
-                "Name":"Deploy",
-                "Actions":[
-                  {
-                    "InputArtifacts":[
-                      {
-                        "Name":"BuildOutput"
+              { "Fn::If": [ "DeployStack", 
+                {
+                  "Name":"Deploy",
+                  "Actions":[
+                    {
+                      "InputArtifacts":[
+                        {
+                          "Name":"BuildOutput"
+                        },
+                        {
+                          "Name":"GithubArtifact"
+                        }
+                      ],
+                      "Name": { "Fn::Sub": "${ProjectName}CloudFormationDeploy" },
+                      "ActionTypeId":{
+                        "Category":"Deploy",
+                        "Owner":"AWS",
+                        "Version":"1",
+                        "Provider":"CloudFormation"
                       },
-                      {
-                        "Name":"GithubArtifact"
-                      }
-                    ],
-                    "Name": { "Fn::Sub": "${ProjectName}CloudFormationDeploy" },
-                    "ActionTypeId":{
-                      "Category":"Deploy",
-                      "Owner":"AWS",
-                      "Version":"1",
-                      "Provider":"CloudFormation"
-                    },
-                    "OutputArtifacts":[],
-                    "Configuration":{
-                      "StackName": { "Ref": "ProjectName" },
-                      "ActionMode": "REPLACE_ON_FAILURE",
-                      "RoleArn": { "Fn::GetAtt": [ "DeployRole", "Arn" ] },
-                      "Capabilities":"CAPABILITY_NAMED_IAM", 
-                      "TemplatePath": { "Fn::Sub": "BuildOutput::${BuildOutputStackTemplatePath}" },
-                      "TemplateConfiguration": { "Fn::Sub": "GithubArtifact::${SiteConfigurationPath}" }
-                    },
-                    "RunOrder":1
-                  }
-                ]
-              }
+                      "OutputArtifacts":[],
+                      "Configuration":{
+                        "StackName": { "Ref": "ProjectName" },
+                        "ActionMode": "REPLACE_ON_FAILURE",
+                        "RoleArn": { "Fn::GetAtt": [ "DeployRole", "Arn" ] },
+                        "Capabilities":"CAPABILITY_NAMED_IAM", 
+                        "TemplatePath": { "Fn::Sub": "BuildOutput::${BuildOutputStackTemplatePath}" },
+                        "TemplateConfiguration": { "Fn::Sub": "GithubArtifact::${SiteConfigurationPath}" }
+                      },
+                      "RunOrder":1
+                    }
+                  ]
+                },
+                { "Ref": "AWS::NoValue" }
+              ] }
             ],
             "ArtifactStore":{
               "Type":"S3",
