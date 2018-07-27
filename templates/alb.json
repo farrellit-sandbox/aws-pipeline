@@ -13,7 +13,7 @@
     "AppTargetPort": { "Type": "Number" , "Default": 80 }
   },
   "Conditions": {
-    "SeparateHealthCheckPort": { "Fn::Not": [ { "Fn::Equals": [ "HealthCheckPort", "0" ] } ] } 
+    "SeparateHealthCheckPort": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "HealthCheckPort" }, "0" ] } ] } 
   },
   "Resources": {
     "LoadBalancer": {
