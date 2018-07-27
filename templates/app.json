@@ -97,7 +97,6 @@
       }
     },
     "ApplicationASG": {
-      "Condition": "Debug",
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": {
         "TemplateURL": "file://templates/asg.json",
