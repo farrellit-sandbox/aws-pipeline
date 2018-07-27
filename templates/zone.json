@@ -4,7 +4,10 @@
     "Environment": {"Type": "String" },
     "ApplicationName": { "Type": "String" } ,
     "ApplicationGroup": { "Type": "String" },
-    "QueryLogArn": { "Type": "String" }
+    "QueryLogArn": { "Type": "String", "Default": "" }
+  },
+  "Conditions": { 
+    "LogQueries": { "Fn::Not": [ { "Fn::Equals" : [ {"Ref": "QueryLogArn" }, "" ] } ] }
   },
   "Resources": {
     "HostedZone": {
@@ -17,9 +20,10 @@
           { "Key": "group", "Value": { "Ref": "ApplicationGroup" } }
         ],
         "Name" : { "Ref": "DomainName" },
-        "QueryLoggingConfig" : {
-          "CloudWatchLogsLogGroupArn" : { "Ref": "QueryLogArn" }
-        }
+        "QueryLoggingConfig" : { "Fn::If": [ "LogQueries", 
+          { "CloudWatchLogsLogGroupArn" : { "Ref": "QueryLogArn" } },
+          { "Ref": "AWS::NoValue" }
+        ] }
       }
     }
   }
