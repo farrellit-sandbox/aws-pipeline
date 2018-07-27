@@ -109,7 +109,7 @@
         },
         "ApplicationProfile": {
             "Properties": {
-                "Path": "/app/${Environment}/${ApplicationName}/",
+                "Path": {"Fn::Sub": "/app/${Environment}/${ApplicationName}/" },
                 "Roles": [ { "Ref": "ApplicationRole" } ]
             },
             "Type": "AWS::IAM::InstanceProfile"
@@ -125,14 +125,14 @@
                             "Principal": { "AWS": { "Ref": "AWS::AccountId" } }
                         },
                         {
-                            "Action": [ "sts:AssumeRole" ],
+                            "Action": "sts:AssumeRole", 
                             "Effect": "Allow",
-                            "Principal": { "Service": [ "ec2.amazonaws.com" ] }
+                            "Principal": { "Service": "ec2.amazonaws.com" }
                         }
                     ],
                     "Version": "2012-10-17"
                 },
-                "Path": "/app/${Environment}/${ApplicationName}/",
+                "Path": {"Fn::Sub": "/app/${Environment}/${ApplicationName}/" },
                 "Policies": [
                     {
                         "PolicyDocument": {
