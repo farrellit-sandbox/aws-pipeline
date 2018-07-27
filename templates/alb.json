@@ -23,6 +23,7 @@
         "Type": "application",
         "Scheme": { "Ref": "Scheme" },
         "Subnets": { "Ref": "Subnets" },
+        "SecurityGroups": [ {"Ref": "SecurityGroup" } ],
         "Tags": [ 
           { "Key": "app", "Value": { "Ref": "ApplicationName" } },
           { "Key": "environment", "Value": { "Ref": "Environment" } }
