@@ -241,7 +241,7 @@
                   }
                 ]
               },
-              { "Fn::If": [ "DoSelfDeployPieline", 
+              { "Fn::If": [ "DoSelfDeployPipeline", 
                 {
                   "Name":"SelfDeployPipeline",
                   "Actions":[
