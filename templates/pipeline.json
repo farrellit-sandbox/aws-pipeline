@@ -7,6 +7,7 @@
     "GithubBranch":  { "Type": "String", "Description": "Github branch name which autodeploys here ... would like to add gated, remote prod deploy with template diff and exec set" },
     "RepoBuildspecPath": {"Type": "String", "Description": "location of buildspec .yaml", "Default": "buildspec.yml" },
     "BuildOutputStackTemplatePath": {"Type": "String", "Description": "location of stack in output artifact, if any", "Default": "cooked-stack.json" },
+    "BuildSpec": { "Type": "String", "Description": "The literal buildspec as a string", "Default": "" },
     "SiteTemplate": { "Type": "String", "Description": "The place to start ( it would call other stacks from other templates, setting parameters)","Default": "" },
     "SiteConfigurationPath": { "Type": "String", "Description": "Configuration for the site template", "Default": "" },
     "PipelineTemplateConfigurationPath": { "Type": "String", "Description": "Where are the configurations for this template stored?", "Default": "" },
@@ -25,6 +26,7 @@
   "Conditions": {
     "DoSelfDeployPipeline": { "Fn::Equals": [ "True", { "Ref": "SelfDeployPipeline" } ] },
     "DeployStack": { "Fn::Not": [ { "Fn::Equals": [ "", { "Ref": "SiteTemplate" } ] } ] },
+    "UseBuildSpec": { "Fn::Not": [ { "Fn::Equals": [ "", { "Ref": "BuildSpec" } ] } ] },
     "DeployRole": { "Fn::Or": [ { "Condition": "DeployStack" }, { "Condition": "DoSelfDeployPipeline" } ] }
   },
    "Resources":{
@@ -58,17 +60,12 @@
                  "Name": "REGION", 
                  "Type": "PLAINTEXT",
                  "Value": { "Ref": "AWS::Region" }
-               },
-               {
-                 "Name": "ExtraENV", 
-                 "Type": "PLAINTEXT",
-                 "Value": { "Ref": "ExtraENV" }
                }
              ]
            },
            "Source": {
              "Type":"CODEPIPELINE",
-             "BuildSpec":  { "Ref": "RepoBuildspecPath" }
+             "BuildSpec":{ "Fn::If": [ "UseBuildSpec", { "Ref": "BuildSpec" }, { "Ref": "RepoBuildspecPath" } ] }
           },
            "TimeoutInMinutes": 10,
            "Tags" : [
