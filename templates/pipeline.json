@@ -23,9 +23,9 @@
     "ComputeType": { "Type": "String", "Default": "BUILD_GENERAL1_SMALL"}
   },
   "Conditions": {
-    "SelfDeployPipeline": { "Fn::Equals": [ "True", { "Ref": "SelfDeployPipeline" } ] },
+    "DoSelfDeployPipeline": { "Fn::Equals": [ "True", { "Ref": "SelfDeployPipeline" } ] },
     "DeployStack": { "Fn::Not": [ { "Fn::Equals": [ "", { "Ref": "SiteTemplate" } ] } ] },
-    "DeployRole": { "Fn::Or": [ { "Condition": "DeployStack" }, { "Condition": "SelfDeployPipeline" } ] }
+    "DeployRole": { "Fn::Or": [ { "Condition": "DeployStack" }, { "Condition": "DoSelfDeployPipeline" } ] }
   },
    "Resources":{
       "Bucket": {
@@ -241,7 +241,7 @@
                   }
                 ]
               },
-              { "Fn::If": [ "SelfDeployPieline", 
+              { "Fn::If": [ "DoSelfDeployPieline", 
                 {
                   "Name":"SelfDeployPipeline",
                   "Actions":[
