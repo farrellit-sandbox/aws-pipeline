@@ -10,6 +10,7 @@
     "GithubRepo": { "Type": "String", "Default": "" },
     "GithubBranch": { "Type": "String", "Default": "master" },
     "SourceRepository": { "Type": "String", "Description": "Applies when we're not building it ourself", "Default": "" },
+    "SourceRepositoryArn": { "Type": "String", "Description": "How could we figure this out", "Default": "" },
     "DockerDir": { "Type": "String", "Default": "." },
     "DockerFile": { "Type": "String", "Default": "Dockerfile" },
     "RepositoryName": { "Type": "String", "Default": "" }
@@ -26,11 +27,50 @@
         "RepositoryName": { "Fn::If": [ "UseRepositoryName", { "Ref": "RepositoryName" }, { "Fn::Sub": "${ApplicationGroup}/${ApplicationName}" } ]  }
       }
     },
+    "ApplicationBuildPolicy": {
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "Properties" : {
+        "Description" : "Access the repositories",
+        "Path" : "/build/docker/",
+        "PolicyDocument" :   {
+          "Version":"2012-10-17", 
+          "Statement" : [
+            {
+              "Action": [ "ecr:GetAuthorizationToken" ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "NotAction": [
+                "ecr:Delete*",
+                "ecr:Put*Policy",
+                "ecr:Set*Policy"
+              ],
+              "Effect": "Allow",
+              "Resource": [ { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ImageRepo}" } ] 
+            },
+            { "Fn::If": [ "HasSourceRepository", 
+             {
+              "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:GetDownloadUrlForLayer"
+              ],
+              "Effect": "Allow",
+              "Resource":  { "Ref": "SourceRepositoryArn" }
+             },
+             { "Ref": "AWS::NoValue" }
+            ] }
+          ]
+        }
+      }
+    },
     "ApplicationDockerPipeline": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": { 
         "TemplateURL": "file://templates/pipeline.json",
         "Parameters": {
+          "BuildPolicyArns": { "Ref": "ApplicationBuildPolicy" },
           "ProjectName": { "Fn::Sub": "${ApplicationGroup}-${ApplicationName}" },
           "GithubOwner": {  "Ref": "GithubOwner" },
           "GithubRepo": { "Ref": "GithubRepo" },

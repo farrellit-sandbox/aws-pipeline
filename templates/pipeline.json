@@ -1,5 +1,6 @@
 {
   "Parameters" : {
+    "BuildPolicyArns": { "Type": "CommaDelimitedList", "Default": "", "Description": "Additional Policies for Build" },
     "GitHubOAUTHToken": { "Type": "AWS::SSM::Parameter::Value<String>" , "Default": "/deployment/github/oauth", "NoEcho": "true" },
     "ProjectName": {"Type": "String", "Description": "Used for naming all the various parts" },
     "GithubOwner":  { "Type": "String", "Description": "Github user or org" },
@@ -76,6 +77,7 @@
        "BuildRole": {
              "Type": "AWS::IAM::Role",
              "Properties": {
+               "ManagedPolicyArns": { "Ref": "BuildPolicyArns" },
                "Path": "/devops/delivery/",
                "AssumeRolePolicyDocument": {
                  "Version": "2012-10-17",
