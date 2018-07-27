@@ -22,11 +22,12 @@
     "Zone6AZ": { "Type": "String" },
     "NetworkName": { "Type": "String" }, 
     "Environment": { "Type": "String" },
-    "Production": { "Type": "String" }
+    "Production": { "Type": "String", "Default": "False" }
   },
   "Conditions": {
     "IncludeDebug": { "Fn::Equals": [ "False", "True" ] },
-    "OmitEnvironmentInDomain": { "Fn::Equals": [ "Environment", "prod" ] }
+    "OmitEnvironmentInDomain": { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] },
+    "IsProduction": { "Fn::Equals": [ {"Ref":"Production"}, "True" ] }
   },
   "Resources": { 
     "Vpc": {
@@ -65,7 +66,7 @@
         "TemplateURL": "file://templates/iam.json"
       }
     },
-    "MasterSandboxApp": {
+    "DemoApp": {
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": {
         "TemplateURL": "file://templates/app.json",
@@ -86,8 +87,7 @@
           "GithubRepo": "demo-docker-app",
           "GithubBranch": "master",
           "VpcId": { "Fn::GetAtt": [ "Vpc", "Outputs.VpcId" ] },
-          "DelegationZone": "sandbox.farrellit.net." ,
-          "KeyName": "dfarrell@dod"
+          "DelegationZone": "sandbox.farrellit.net."
         }
       }
     }
