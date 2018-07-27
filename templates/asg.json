@@ -12,6 +12,7 @@
         },
         "ApplicationName": { "Type": "String", "Description": "For classification purposes" },
         "AppSubnets": { "Type": "List<AWS::EC2::Subnet::Id>", "Description": "subnet(s) to use" },
+        "LoadBalancerSubnets": { "Type": "List<AWS::EC2::Subnet::Id>", "Description": "subnet(s) to use" },
         "Environment": { "Type": "String", "Description": "For classification purposes" },
         "LogRetentionInDays": { "Type": "Number", "Default": "14" },
         "KeyName": { "Type": "String", "Default": "" },
