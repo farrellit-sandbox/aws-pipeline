@@ -12,25 +12,19 @@
         },
         "ApplicationName": { "Type": "String", "Description": "For classification purposes" },
         "AppSubnets": { "Type": "List<AWS::EC2::Subnet::Id>", "Description": "subnet(s) to use" },
-        "LoadBalancerSubnets": { "Type": "List<AWS::EC2::Subnet::Id>", "Description": "subnet(s) to use" },
         "Environment": { "Type": "String", "Description": "For classification purposes" },
-        "LogRetentionInDays": { "Type": "Number", "Default": "14" },
         "KeyName": { "Type": "String", "Default": "" },
         "ImageId": { "Type": "String", "Default": "" },
-        "DockerExtra": { "Type": "String", "Default": "Extra arguments for docker" },
-        "InstanceType": { "Type": "String", "Default": "t2.nano" }
+        "DockerExtra": { "Type": "String", "Description": "Extra arguments for docker", "Default": "" },
+        "InstanceType": { "Type": "String", "Default": "t2.nano" },
+        "LogGroupName": { "Type": "String"}, 
+        "LogGroupArn": { "Type": "String"}
     },
     "Conditions": {
-      "OmitSshKey": { "Fn::Equals": [ { "Ref": "KeyName" } , "" ] }
+      "OmitSshKey": { "Fn::Equals": [ { "Ref": "KeyName" } , "" ] },
+      "OmitDockerExtra": { "Fn::Equals": [ { "Ref": "DockerExtra" } , "" ] }
     },
     "Resources": {
-        "ApplicationLogGroup": {   
-            "Properties": {
-                "LogGroupName": { "Fn::Sub": "${Environment}-${ApplicationName}" },
-                "RetentionInDays": { "Ref": "LogRetentionInDays" }
-            },
-            "Type": "AWS::Logs::LogGroup"
-        },
         "ApplicationASG": {
             "Properties": {
                 "Cooldown": "90",
@@ -93,12 +87,12 @@
                   "  --log-driver=awslogs \\",
                   { "Fn::Sub": "    --log-opt tag=\"${Environment}-${ApplicationName}/$INSTANCE_ID/{{.ID}}\" \\" },
                   { "Fn::Sub": "    --log-opt awslogs-region=${AWS::Region} \\" },
-                  { "Fn::Sub": "    --log-opt awslogs-group=${ApplicationLogGroup} \\" },
+                  { "Fn::Sub": "    --log-opt awslogs-group=${LogGroupName} \\" },
                   "  --restart=always",
                   {"Fn::Sub": "  -e AWS_REGION=${AWS::Region} \\"},
                   {"Fn::Sub": "  -e AWS_STACK_NAME=${AWS::StackName} \\"},
                   {"Fn::Sub": "  -e AWS_STACK_ID=${AWS::StackId} \\"},
-                  {"Fn::Sub": "${DockerExtra} \\"}, 
+                  { "Fn::If": [ "OmitDockerExtra", { "Ref": "AWS::NoValue" }, {"Fn::Sub": "${DockerExtra} \\"} ] },
                   {"Fn::Sub": " ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryName}:${ImageTag}"},
                   "finish 0"
                 ] ] } }
@@ -158,7 +152,7 @@
                                         "logs:DescribeLogStreams"
                                     ],
                                     "Effect": "Allow",
-                                    "Resource": [ { "Fn::GetAtt": [ "ApplicationLogGroup", "Arn" ] } ]
+                                    "Resource": [ { "Ref": "LogGroupArn" } ]
                                 }
                             ],
                             "Version": "2012-10-17"

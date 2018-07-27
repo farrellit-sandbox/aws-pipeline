@@ -4,6 +4,7 @@
     "ApplicationGroup": { "Type": "String","Description": "Must be lowercase"  },
     "Environment": { "Type": "String" },
     "AppSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId>)" },
+    "LogRetentionInDays": { "Type": "Number", "Default": "14" },
     "LoadBalancerSubnets": { "Type": "String", "Description": "(Really a CSV<SubnetId>)" },
     "ImageId": { "Type": "String" },
     "GithubOwner": { "Type": "String", "Default": "" },
@@ -96,6 +97,24 @@
         }
       }
     },
+    "LogGroup": {   
+      "Properties": {
+        "LogGroupName": { "Fn::Sub": "${Environment}-${ApplicationName}" },
+        "RetentionInDays": { "Ref": "LogRetentionInDays" }
+      },
+      "Type": "AWS::Logs::LogGroup"
+    },
+    "ALB": { 
+      "Type": "AWS::CloudFormation::Stack", 
+      "Properties": {
+        "TemplateURL": "file://templates/alb.json",
+        "Parameters": {
+          "ApplicationName": { "Ref": "ApplicationName" },
+          "Environment": { "Ref": "Environment" },
+          "Subnets": { "Ref": "LoadBalancerSubnets" }
+        }
+      }
+    },
     "ApplicationASG": {
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": {
@@ -104,10 +123,11 @@
           "ApplicationName": { "Ref": "ApplicationName" },
           "Environment": { "Ref": "Environment" },
           "AppSubnets": { "Ref": "AppSubnets" },
-          "LoadBalancerSubnets": { "Ref": "LoadBalancerSubnets" },
           "RepositoryName": { "Ref": "ImageRepo" },
           "ImageTag": "latest",
-          "ImageId": { "Ref": "ImageId" }
+          "ImageId": { "Ref": "ImageId" },
+          "LogGroupName": { "Ref": "LogGroup" },
+          "LogGroupArn:": { "Fn::GetAtt": [ "LogGroup", "Arn" ] }
         }
       }
     }
