@@ -79,7 +79,7 @@
                   "  exit $exit_code;",
                   "}",
                   "trap finish EXIT",
-                  "yum update",
+                  "yum update -y",
                   "yum install -y docker",
                   "# get instance id for logging",
                   "export INSTANCE_ID=\"`curl 169.254.169.254/latest/meta-data/instance-id`\"",
