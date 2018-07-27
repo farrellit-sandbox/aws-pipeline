@@ -1,6 +1,6 @@
 {
   "Parameters" : {
-    "BuildPolicyArns": { "Type": "CommaDelimitedList", "Default": "", "Description": "Additional Policies for Build" },
+    "BuildPolicyArns": { "Type": "String", "Default": "", "Description": "Additional Policies for Build, Comma Delimited" },
     "GitHubOAUTHToken": { "Type": "AWS::SSM::Parameter::Value<String>" , "Default": "/deployment/github/oauth", "NoEcho": "true" },
     "ProjectName": {"Type": "String", "Description": "Used for naming all the various parts" },
     "GithubOwner":  { "Type": "String", "Description": "Github user or org" },
@@ -28,7 +28,8 @@
     "DoSelfDeployPipeline": { "Fn::Equals": [ "True", { "Ref": "SelfDeployPipeline" } ] },
     "DeployStack": { "Fn::Not": [ { "Fn::Equals": [ "", { "Ref": "SiteTemplate" } ] } ] },
     "UseBuildSpec": { "Fn::Not": [ { "Fn::Equals": [ "", { "Ref": "BuildSpec" } ] } ] },
-    "DeployRole": { "Fn::Or": [ { "Condition": "DeployStack" }, { "Condition": "DoSelfDeployPipeline" } ] }
+    "DeployRole": { "Fn::Or": [ { "Condition": "DeployStack" }, { "Condition": "DoSelfDeployPipeline" } ] },
+    "OmitPolicyArns": { "Fn::Equals": [ { "Ref": "BuildPolicyArns" }, "" ] }
   },
    "Resources":{
       "Bucket": {
@@ -77,7 +78,10 @@
        "BuildRole": {
              "Type": "AWS::IAM::Role",
              "Properties": {
-               "ManagedPolicyArns": { "Ref": "BuildPolicyArns" },
+               "ManagedPolicyArns": { "Fn::If": [ "OmitPolicyArns" , 
+                 { "Ref": "AWS::NoValue" }, 
+                 { "Fn::Split": [ ",", { "Ref": "BuildPolicyArns" }  ] }
+               ] },
                "Path": "/devops/delivery/",
                "AssumeRolePolicyDocument": {
                  "Version": "2012-10-17",
