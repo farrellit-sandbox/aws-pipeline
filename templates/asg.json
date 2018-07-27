@@ -139,7 +139,8 @@
                             "Statement": [
                                 {
                                     "Action": [
-                                        "ecr:GetAuthorizationToken"
+                                        "ecr:GetAuthorizationToken",
+                                        "sts:GetCallerIdentity"
                                     ],
                                     "Effect": "Allow",
                                     "Resource": "*"
