@@ -48,7 +48,7 @@
             { "Fn::Sub": "  - docker pull ${SourceRepository}:$CODEBUILD_RESOLVED_SOURCE_VERSION" },
             { "Fn::Sub":["  - docker tag  ${SourceRepository}:$CODEBUILD_RESOLVED_SOURCE_VERSION ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION" , { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
             ] ] }, 
-            { "Fn::Sub":["  - docker build -t ${TargetRepo}$CODEBUILD_RESOLVED_SOURCE_VERSION -f ${DockerFile} ${DockerDir}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
+            { "Fn::Sub":["  - docker build -t ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION -f ${DockerFile} ${DockerDir}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
             ] },
             
             { "Fn::Sub":["  - docker push ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
