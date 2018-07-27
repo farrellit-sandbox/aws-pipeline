@@ -78,7 +78,7 @@
           "AppValidationDomain": "farrellit.net", 
           "Environment": { "Fn::Sub": "${Environment}" },
           "ApplicationGroup": "farrellit-demo",
-          "AppSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.InternalSubnets" ] },
+          "AppSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
           "LoadBalancerSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
           "ImageId": "ami-8c122be9",
           "GithubOwner": "farrellit-sandbox",
