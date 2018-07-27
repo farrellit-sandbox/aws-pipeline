@@ -76,7 +76,7 @@
           "LoadBalancerSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
           "ImageId": "ami-8c122be9",
           "GithubOwner": "farrellit-sandbox",
-          "GithbRepo": "demo-docker-app",
+          "GithubRepo": "demo-docker-app",
           "GithubBranch": "master"
         }
       }
