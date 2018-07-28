@@ -49,6 +49,11 @@
               "Resource": "*"
             },
             {
+              "Action": [ "ssm:PutParameter" ],
+              "Effect": "Allow",
+              "Resource": [ { "Fn::Sub": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/build/github/${GithubOwner}/${GithubRepo}/${GithubBranch}/latest-build" } ]
+            },
+            {
               "NotAction": [
                 "ecr:Delete*",
                 "ecr:Put*Policy",
@@ -102,7 +107,10 @@
             { "Fn::Sub":["  - docker push ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
             { "Fn::Sub":["  - docker tag ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION ${TargetRepo}:${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
             { "Fn::Sub":["  - docker push ${TargetRepo}:${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
-            { "Fn::Sub":["  - aws ssm put-parameter --region ${AWS::Region} --name /build/${TargetRepo}/${GithubBranch} --type String --value ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION ", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
+              { "Fn::Sub":["  - aws ssm put-parameter --region ${AWS::Region} --name ${ParameterName}--type String --value ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION ", { 
+                "ParameterName": { "Fn::Sub": "/build/github/${GithubOwner}/${GithubRepo}/${GithubBranch}/latest-build" } ,
+                "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } 
+              } ] }
           ] ] }
         }
       }
@@ -110,7 +118,7 @@
     "BuildVersionParameter": {
       "Type": "AWS::SSM::Parameter",
       "Properties": {
-        "Name": {"Fn::Sub": [ "/build/${TargetRepo}/${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" }  } ] },
+        "Name": { "Fn::Sub": "/build/github/${GithubOwner}/${GithubRepo}/${GithubBranch}/latest-build" },
         "Description": {"Fn::Sub": [ "Git SHA tag of Latest successful build of ${TargetRepo}:${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" }  } ] },
         "Type": "String", 
         "Value": "0x00"
