@@ -29,7 +29,8 @@
   },
   "Conditions": {
       "OmitSshKey": { "Fn::Equals": [ { "Ref": "KeyName" } , "" ] },
-      "OmitDockerExtra": { "Fn::Equals": [ { "Ref": "DockerExtra" } , "" ] }
+      "OmitDockerExtra": { "Fn::Equals": [ { "Ref": "DockerExtra" } , "" ] },
+      "NullTag": { "Fn::Equals": [ { "Ref": "ImageTagParameter" } , "0x00" ] }
   },
   "Resources": {
         "ApplicationASG": {
@@ -61,7 +62,7 @@
                         "AlarmNotification",
                         "ScheduledActions"
                     ],
-                    "WaitOnResourceSignals": false
+                    "WaitOnResourceSignals": { "Fn::If": ["NullTag", false, true ] }
                 }
             }
         },
