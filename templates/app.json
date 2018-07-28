@@ -107,7 +107,7 @@
             { "Fn::Sub":["  - docker push ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
             { "Fn::Sub":["  - docker tag ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION ${TargetRepo}:${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
             { "Fn::Sub":["  - docker push ${TargetRepo}:${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
-              { "Fn::Sub":["  - aws ssm put-parameter --region ${AWS::Region} --name ${ParameterName} --type String --value ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION ", { 
+              { "Fn::Sub":["  - aws ssm put-parameter --region ${AWS::Region} --name ${ParameterName} --type String --value ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION --overwrite ", { 
                 "ParameterName": { "Fn::Sub": "/build/github/${GithubOwner}/${GithubRepo}/${GithubBranch}/latest-build" } ,
                 "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } 
               } ] }
