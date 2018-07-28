@@ -6,9 +6,13 @@
             "Description": "The name of the ECR image to pull out of this account/region's ECR",
             "Type": "String"
         },
-        "ImageTag": { 
-          "Type": "String",
+        "ImageTagParameter": { 
+          "Type": "AWS::SSM::Parameter::Value<String>",
           "Description": "Docker image tag to pull"
+        },
+        "ImageTagParameterResource": { 
+          "Type":"String",
+          "Description" : "IAM Arn for the ImageTagParameter" 
         },
         "ApplicationName": { "Type": "String", "Description": "For classification purposes" },
         "AppSubnets": { "Type": "List<AWS::EC2::Subnet::Id>", "Description": "subnet(s) to use" },
@@ -101,7 +105,7 @@
                   {"Fn::Sub": "  -e AWS_STACK_ID=${AWS::StackId} \\"},
                   {"Fn::Sub": "  -p ${DockerPort}:${DockerPort} \\"},
                   { "Fn::If": [ "OmitDockerExtra", { "Ref": "AWS::NoValue" }, {"Fn::Sub": "${DockerExtra} \\"} ] },
-                  {"Fn::Sub": " ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryName}:${ImageTag}"},
+                  { "Ref": "ImageTagParameter" },
                   "finish 0"
                 ] ] } }
             },
@@ -137,6 +141,11 @@
                     {
                         "PolicyDocument": {
                             "Statement": [
+                                {
+                                    "Action": [ "ssm:GetParameter" ],
+                                    "Effect": "Allow",
+                                    "Resource":  { "Ref": "ImageTagParameterResource" }
+                                },
                                 {
                                     "Action": [
                                         "ecr:GetAuthorizationToken",
