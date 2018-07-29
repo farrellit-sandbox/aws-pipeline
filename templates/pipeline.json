@@ -343,5 +343,9 @@
         }
 
       }
-    }
+    },
+  "Outputs": { 
+    "Bucket" : { "Value": {"Ref": "Bucket" }, "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:Bucket"} } }, 
+    "BucketArn" : { "Value": {"Fn::GetAtt": [ "Bucket", "Arn" ] }, "Export": { "Name": { "Fn::Sub": "${AWS::StackName}:BucketArn"} } }
+  }
 }

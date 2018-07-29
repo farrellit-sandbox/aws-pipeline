@@ -6,13 +6,9 @@
             "Description": "The name of the ECR image to pull out of this account/region's ECR",
             "Type": "String"
         },
-        "ImageTagParameter": { 
-          "Type": "AWS::SSM::Parameter::Value<String>",
-          "Description": "Docker image tag to pull"
-        },
-        "ImageTagParameterResource": { 
-          "Type":"String",
-          "Description" : "IAM Arn for the ImageTagParameter" 
+        "Image": { 
+          "Type": "String",
+          "Description": "Docker image to pull"
         },
         "ApplicationName": { "Type": "String", "Description": "For classification purposes" },
         "AppSubnets": { "Type": "List<AWS::EC2::Subnet::Id>", "Description": "subnet(s) to use" },
@@ -29,8 +25,7 @@
   },
   "Conditions": {
       "OmitSshKey": { "Fn::Equals": [ { "Ref": "KeyName" } , "" ] },
-      "OmitDockerExtra": { "Fn::Equals": [ { "Ref": "DockerExtra" } , "" ] },
-      "NullTag": { "Fn::Equals": [ { "Ref": "ImageTagParameter" } , "0x00" ] }
+      "OmitDockerExtra": { "Fn::Equals": [ { "Ref": "DockerExtra" } , "" ] }
   },
   "Resources": {
         "ApplicationASG": {
@@ -106,7 +101,7 @@
                   {"Fn::Sub": "  -e AWS_STACK_ID=${AWS::StackId} \\"},
                   {"Fn::Sub": "  -p ${DockerPort}:${DockerPort} \\"},
                   { "Fn::If": [ "OmitDockerExtra", { "Ref": "AWS::NoValue" }, {"Fn::Sub": "${DockerExtra} \\"} ] },
-                  { "Ref": "ImageTagParameter" },
+                  { "Ref": "Image" },
                   "finish 0"
                 ] ] } }
             },
@@ -142,11 +137,6 @@
                     {
                         "PolicyDocument": {
                             "Statement": [
-                                {
-                                    "Action": [ "ssm:GetParameter" ],
-                                    "Effect": "Allow",
-                                    "Resource":  { "Ref": "ImageTagParameterResource" }
-                                },
                                 {
                                     "Action": [
                                         "ecr:GetAuthorizationToken",

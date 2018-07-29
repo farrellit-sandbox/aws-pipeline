@@ -21,7 +21,9 @@
     "DelegationZoneId": { "Type": "String", "Default": "", "Description": "So delegation records can be created" },
     "DelegationZone": { "Type": "String", "Default": "", "Description": "So delegation records can be created" },
     "DockerPort": {"Type": "String", "Default": "80", "Description": "Open this port for the docker container" },
-    "KeyName": {"Type": "String", "Default": "" }
+    "KeyName": {"Type": "String", "Default": "" },
+    "Bucket": { "Type": "String", "Description": "where to retrieve artifacts from this stack buld, from the top level pipeline" },
+    "BucketArn": { "Type": "String", "Description": "arn of bucket" }
   },
   "Conditions": {
     "Debug": { "Fn::Equals": [ "True", "False" ] },
@@ -78,40 +80,29 @@
         }
       }
     },
-    "ApplicationDockerPipeline": {
+    "DockerPipeline": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": { 
-        "TemplateURL": "file://templates/pipeline.json",
+        "TemplateURL": "file://templates/docker-pipeline.json",
         "Parameters": {
-          "BuildPolicyArns": { "Ref": "ApplicationBuildPolicy" },
           "ProjectName": { "Fn::Sub": "${ApplicationGroup}-${ApplicationName}" },
           "GithubOwner": {  "Ref": "GithubOwner" },
           "GithubRepo": { "Ref": "GithubRepo" },
           "GithubBranch": { "Ref": "GithubBranch" },
-          "SiteTemplate": "",
-          "SelfDeployPipeline": "False",
-          "BuildImage": "aws/codebuild/docker:17.09.0",
-          "BuildSpec": { "Fn::Join": [ "\n", [
-            "version: 0.2",
-            "phases:",
-            " install:",
-            "  commands:",
-            "  - aws ecr get-login --no-include-email | sh" , 
-            { "Fn::If": [ "HasSourceRepository", { "Fn::Join": [ "\n", [
-            { "Fn::Sub": "  - docker pull ${SourceRepository}:$CODEBUILD_RESOLVED_SOURCE_VERSION" },
-            { "Fn::Sub":["  - docker tag  ${SourceRepository}:$CODEBUILD_RESOLVED_SOURCE_VERSION ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION" , { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
-            ] ] }, 
-            { "Fn::Sub":["  - docker build -t ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION -f ${DockerFile} ${DockerDir}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] }
-            ] },
-            
-            { "Fn::Sub":["  - docker push ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
-            { "Fn::Sub":["  - docker tag ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION ${TargetRepo}:${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
-            { "Fn::Sub":["  - docker push ${TargetRepo}:${GithubBranch}", { "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } } ] },
-              { "Fn::Sub":["  - aws ssm put-parameter --region ${AWS::Region} --name ${ParameterName} --type String --value ${TargetRepo}:$CODEBUILD_RESOLVED_SOURCE_VERSION --overwrite ", { 
-                "ParameterName": { "Fn::Sub": "/build/github/${GithubOwner}/${GithubRepo}/${GithubBranch}/latest-build" } ,
-                "TargetRepo": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageRepo}" } 
-              } ] }
-          ] ] }
+          "SourceRepository": {"Ref": "SourceRepository" },
+          "RepositoryName": { "Ref": "ImageRepo" },
+          "ApplicationName": { "Ref": "ApplicationName" },
+          "AppSubnets": { "Ref": "AppSubnets" },
+          "Environment": { "Ref": "Environment" },
+          "KeyName": { "Ref": "KeyName" },
+          "ImageId": { "Ref": "ImageId" },
+          "DockerPort": { "Ref": "DockerPort" },
+          "LogGroupName": { "Ref": "LogGroup" },
+          "LogGroupArn": { "Fn::GetAtt": [ "LogGroup", "Arn" ] },
+          "TargetSecurityGroup": { "Fn::GetAtt": [ "ALB", "Outputs.BackendSecurityGroup" ] },
+          "TargetGroupArns": { "Fn::GetAtt": [ "ALB", "Outputs.TargetGroupArn" ] },
+          "Bucket": {"Ref": "Bucket" },
+          "BucketArn": {"Ref": "BucketArn" }
         }
       }
     },
@@ -157,27 +148,6 @@
           "DomainName": { "Ref": "AppDomainName" },
           "ValidationDomain": { "Ref": "AppValidationDomain" },
           "HostedZoneId": { "Fn::GetAtt": [ "HostedZone", "Outputs.HostedZoneId" ] } 
-        }
-      }
-    },
-    "ApplicationASG": {
-      "Type": "AWS::CloudFormation::Stack", 
-      "Properties": {
-        "TemplateURL": "file://templates/asg.json",
-        "Parameters": {
-          "ApplicationName": { "Ref": "ApplicationName" },
-          "Environment": { "Ref": "Environment" },
-          "AppSubnets": { "Ref": "AppSubnets" },
-          "DockerPort": { "Ref": "DockerPort" },
-          "RepositoryName": { "Ref": "ImageRepo" },
-          "ImageTagParameter": { "Fn::Sub": "/build/github/${GithubOwner}/${GithubRepo}/${GithubBranch}/latest-build" },
-          "ImageTagParameterResource":{ "Fn::Sub": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/build/github/${GithubOwner}/${GithubRepo}/${GithubBranch}/latest-build" } ,
-          "ImageId": { "Ref": "ImageId" },
-          "LogGroupName": { "Ref": "LogGroup" },
-          "LogGroupArn": { "Fn::GetAtt": [ "LogGroup", "Arn" ] },
-          "TargetSecurityGroup": { "Fn::GetAtt": [ "ALB", "Outputs.BackendSecurityGroup" ] },
-          "TargetGroupArns": { "Fn::GetAtt": [ "ALB", "Outputs.TargetGroupArn" ] },
-          "KeyName": { "Ref": "KeyName" }
         }
       }
     }

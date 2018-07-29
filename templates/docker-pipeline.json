@@ -1,0 +1,291 @@
+{
+  "Parameters" : {
+    "GitHubOAUTHToken": { "Type": "AWS::SSM::Parameter::Value<String>" , "Default": "/deployment/github/oauth", "NoEcho": "true" },
+    "ProjectName": {"Type": "String", "Description": "Used for naming all the various parts" },
+    "GithubOwner":  { "Type": "String", "Description": "Github user or org" },
+    "GithubRepo":  { "Type": "String", "Description": "Github repo name" },
+    "GithubBranch":  { "Type": "String", "Description": "Github branch name which autodeploys here ... would like to add gated, remote prod deploy with template diff and exec set" },
+    "BuildImage": { "Type": "String", "Default": "aws/codebuild/docker:17.09.0" },
+    "ComputeType": { "Type": "String", "Default": "BUILD_GENERAL1_SMALL" },
+    "SourceRepository": { "Type": "String", "Default": "" },
+    "RepositoryName": { "Type": "String" },
+    "ApplicationName": { "Type": "String" },
+    "AppSubnets": { "Type": "String" }, 
+    "Environment": { "Type": "String" },
+    "KeyName": { "Type": "String" },
+    "ImageId": { "Type": "String" },
+    "DockerExtra": { "Type": "String", "Default": "" },
+    "DockerPort": {"Type": "String" },
+    "DockerFile": {"Type": "String", "Default": "Dockerfile"  },
+    "DockerDir": {"Type": "String", "Default": "."  },
+    "LogGroupArn": { "Type": "String" },
+    "LogGroupName": { "Type": "String" },
+    "TargetGroupArns": { "Type": "String" },
+    "TargetSecurityGroup": { "Type": "String" },
+    "Bucket": { "Type": "String" },
+    "BucketArn": { "Type": "String" }
+  },
+  "Conditions": {
+    "HasSourceRepository": { "Fn::Not": [ { "Fn::Equals": [ {"Ref":"SourceRepository"}, "" ] } ] }
+  },
+  "Resources":{
+       "CodeBuildProject": {
+         "Type": "AWS::CodeBuild::Project",
+         "Properties": {
+           "Name": { "Ref": "ProjectName" }, 
+           "ServiceRole": { "Fn::GetAtt": [ "DockerBuildRole", "Arn" ] },
+           "Artifacts": {
+             "Type": "CODEPIPELINE"
+           },
+           "Environment": {
+             "Type": "linuxContainer",
+             "ComputeType": { "Ref":"ComputeType" },
+             "Image": { "Ref": "BuildImage" },
+             "EnvironmentVariables": [ 
+               { "Name": "BUCKET", "Type": "PLAINTEXT", "Value": { "Ref": "Bucket" } },
+               { "Name": "TargetRepo", "Type": "PLAINTEXT", "Value": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryName}" } },
+               { "Name": "SourceRepository", "Type": "PLAINTEXT", "Value": { "Ref": "SourceRepository" } },
+               { "Name": "DockerDir", "Type": "PLAINTEXT", "Value": { "Ref": "DockerDir" } },
+               { "Name": "DockerFile", "Type": "PLAINTEXT", "Value": { "Ref": "DockerFile" } },
+               { "Name": "GithubBranch", "Type": "PLAINTEXT", "Value": { "Ref": "GithubBranch" } },
+               { "Name": "FileLocation", "Type": "PLAINTEXT", "Value": "file://templates/asg.json" }, 
+
+               { "Name": "RepositoryName", "Value": { "Ref": "RepositoryName" }, "Type": "PLAINTEXT" },
+               { "Name": "ApplicationName", "Value": { "Ref": "ApplicationName" }, "Type": "PLAINTEXT" },
+               { "Name": "AppSubnets", "Value": { "Ref": "AppSubnets" }, "Type": "PLAINTEXT" }, 
+               { "Name": "Environment", "Value": { "Ref": "Environment" }, "Type": "PLAINTEXT" },
+               { "Name": "KeyName", "Value": { "Ref": "KeyName" }, "Type": "PLAINTEXT" },
+               { "Name": "ImageId", "Value": { "Ref": "ImageId" }, "Type": "PLAINTEXT" },
+               { "Name": "DockerExtra", "Value": { "Ref": "DockerExtra" }, "Type": "PLAINTEXT" },
+               { "Name": "DockerPort", "Value": { "Ref": "DockerPort" }, "Type": "PLAINTEXT" },
+               { "Name": "DockerFile", "Value": { "Ref": "DockerFile" }, "Type": "PLAINTEXT" },
+               { "Name": "DockerDir", "Value": { "Ref": "DockerDir" }, "Type": "PLAINTEXT" },
+               { "Name": "LogGroupArn", "Value": { "Ref": "LogGroupArn" }, "Type": "PLAINTEXT" },
+               { "Name": "LogGroupName", "Value": { "Ref": "LogGroupName" }, "Type": "PLAINTEXT" },
+               { "Name": "TargetGroupArns", "Value": { "Ref": "TargetGroupArns" }, "Type": "PLAINTEXT" },
+               { "Name": "TargetSecurityGroup", "Value": { "Ref": "TargetSecurityGroup" }, "Type": "PLAINTEXT" }
+             ]
+           },
+           "Source": {
+             "Type":"CODEPIPELINE",
+             "BuildSpec": { "Fn::Join": [ "\n", [
+                "version: 0.2",
+                "phases:",
+                " install:",
+                "  commands:",
+                "  - aws ecr get-login --no-include-email | sh" , 
+                { "Fn::If": [ "HasSourceRepository", 
+                  { "Fn::Join": [ "\n", [
+                    "  - docker pull $SourceRepository:$CODEBUILD_RESOLVED_SOURCE_VERSION",
+                    "  - docker tag  ${SourceRepository}:$CODEBUILD_RESOLVED_SOURCE_VERSION $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION"
+                  ] ] }, 
+                  "  - docker build -t $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION -f ${DockerFile} ${DockerDir}"
+                ] },
+                "  - docker push $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION",  
+                "  - docker tag $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION $TargetRepo:${GithubBranch}",
+                "  - docker push $TargetRepo:${GithubBranch}",
+                "  - aws ssm put-parameter --name ${ParameterName} --type String --value $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION --overwrite ",
+                "# we know the template we want to build, but can only pass it back in the artifact",
+                "  - aws s3 cp $FileLocation ./template.json",
+                 {"Fn::Join": [ "", [ 
+                "  - python -c \"",
+                  "import json,sys; sys.stderr.write(json.dumps(dict(",
+                  "RepositoryName='$RepositoryName',",
+                  "ApplicationName='$ApplicationName',",
+                  "AppSubnets='$AppSubnets',",
+                  "Environment='$Environment',",
+                  "KeyName='$KeyName',",
+                  "ImageId='$ImageId',",
+                  "DockerExtra='$DockerExtra',",
+                  "LogGroupName='$LogGroupName',",
+                  "LogGroupArn='$LogGroupArn',",
+                  "TargetGroupArns='$TargetGroupArns',",
+                  "TargetSecurityGroup='$TargetSecurityGroup',",
+                  "Image='$TargetRepo'+':'+'$CODEBUILD_RESOLVED_SOURCE_VERSION',",
+                  "))) \" > params.json "
+                ] ] },
+                "artifacts:",
+                " files:",
+                " - params.json",
+                " - template.json"
+             ] ] }
+           },
+           "TimeoutInMinutes": 10,
+           "Tags" : [
+            { "Key": "project", "Value": { "Ref": "ProjectName" } },
+            { "Key": "environment", "Value": { "Ref": "Environment" } },
+            { "Key": "app", "Value": { "Ref": "ApplicationName" } }
+           ]
+         }
+       },
+       "DockerBuildRole": {
+             "Type": "AWS::IAM::Role",
+             "Properties": {
+               "Path": "/devops/delivery/",
+               "AssumeRolePolicyDocument": {
+                 "Version": "2012-10-17",
+                 "Statement": [
+                   {
+                     "Effect": "Allow",
+                     "Principal": { "Service": [ "codepipeline.amazonaws.com", "codebuild.amazonaws.com" ] },
+                     "Action": "sts:AssumeRole"
+                   }
+                 ]
+               },
+               "Policies": [
+                 {
+                   "PolicyName": "BuildPolicy",
+                   "PolicyDocument": {
+                     "Version": "2012-10-17",
+                     "Statement": [
+                       {
+                         "Sid": "CloudWatchLogsPolicy",
+                         "Effect": "Allow",
+                         "Action": [
+                           "logs:CreateLogGroup",
+                           "logs:CreateLogStream",
+                           "logs:PutLogEvents"
+                         ],
+                         "Resource": [ "*" ]
+                       },
+                       {
+                         "Sid": "S3GetObjectPolicy",
+                         "Effect": "Allow",
+                         "Action": [
+                           "s3:Get*",
+                           "s3:Describe*",
+                           "s3:List*"
+                         ],
+                         "Resource": [ { "Ref": "BucketArn" }, { "Fn::Sub": "${BucketArn}/*" }  ]
+                       },
+                       {
+                           "Effect"   : "Allow",
+                           "Action"   : [
+                            "iam:PassRole",
+                            "iam:GetRole*"
+                          ],
+                          "Resource" : { "Fn::GetAtt": [ "DeployRole", "Arn" ] }
+                       }
+                     ]
+                   }
+                 }
+               ]
+             }
+           },
+          "CodeBuildPolicy": {
+              "Type" : "AWS::IAM::Policy",
+              "Properties" : {
+              "PolicyName" : "PipelineBuild",
+              "PolicyDocument" : {
+                "Version" : "2012-10-17",
+                "Statement": [  
+                  {
+                    "Sid": "AllowProjectBuilds",
+                    "Effect": "Allow",
+                    "Action": [ "codebuild:*" ],
+                    "Resource": [ { "Fn::GetAtt": [ "CodeBuildProject", "Arn" ] } ]
+                  }
+                ]
+              },
+              "Roles" : [ { "Ref" : "DockerBuildRole" } ]
+            }
+          },
+          "DeployRole": {
+             "Type": "AWS::IAM::Role",
+             "Properties": {
+               "Path": "/devops/delivery/",
+               "AssumeRolePolicyDocument": {
+                 "Version": "2012-10-17",
+                 "Statement": [
+                   {
+                     "Effect": "Allow",
+                     "Principal": { "Service": [ "cloudformation.amazonaws.com" ] },
+                     "Action": "sts:AssumeRole"
+                   }
+                 ]
+               },
+               "Policies": [
+                 {
+                   "PolicyName": "FullAccessPolicy",
+                   "PolicyDocument": {
+                     "Version": "2012-10-17",
+                     "Statement": [
+                       {
+                         "Sid": "NotSureWhatHereYet",
+                         "Effect": "Allow",
+                         "Action": [ "*" ],
+                         "Resource": [ "*" ]
+                       }
+                     ]
+                   }
+                 }
+               ]
+             }
+           },
+      "DockerPipeline":{
+        "Type":"AWS::CodePipeline::Pipeline",
+        "Properties":{
+          "Name": { "Fn::Sub": "${ProjectName}-docker-pipeline" },
+          "RoleArn": {"Fn::GetAtt" : [ "DockerBuildRole", "Arn" ] },
+            "Stages":[
+              {
+                "Name":"Source",
+                "Actions":[
+                  {
+                    "InputArtifacts":[],
+                    "Name":"GithubSource",
+                    "ActionTypeId":{ "Category":"Source", "Owner":"ThirdParty", "Version":"1", "Provider":"GitHub" },
+                    "OutputArtifacts":[ { "Name":"GithubArtifact" } ],
+                    "Configuration":{
+                      "Owner": { "Ref": "GithubOwner" },
+                      "Repo": { "Ref": "GithubRepo" },
+                      "Branch": { "Ref": "GithubBranch" },
+                      "OAuthToken":{ "Ref": "GitHubOAUTHToken" }
+                    },
+                    "RunOrder":1
+                  }
+                ]
+              },
+              {
+                "Name":"Build",
+                "Actions":[
+                  {
+                    "Name":"ProjectBuild",
+                    "InputArtifacts":[ { "Name":"GithubArtifact" } ],
+                    "ActionTypeId":{ "Category":"Build", "Owner":"AWS", "Version":"1", "Provider":"CodeBuild" },
+                    "OutputArtifacts":[{"Name":"BuildOutput"}],
+                    "Configuration":{ "ProjectName":{"Ref":"CodeBuildProject"} },
+                    "RunOrder":1
+                  }
+                ]
+              },
+              {
+                  "Name":"Deploy",
+                  "Actions":[
+                    {
+                      "Name": { "Fn::Sub": "${ProjectName}CloudFormationDeploy" },
+                      "InputArtifacts":[ { "Name":"BuildOutput" }, { "Name":"GithubArtifact" } ],
+                      "ActionTypeId":{ "Category":"Deploy", "Owner":"AWS", "Version":"1", "Provider":"CloudFormation" },
+                      "OutputArtifacts":[],
+                      "Configuration":{
+                        "StackName": { "Ref": "ProjectName" },
+                        "ActionMode": "CREATE_UPDATE",
+                        "RoleArn": { "Fn::GetAtt": [ "DeployRole", "Arn" ] },
+                        "Capabilities":"CAPABILITY_NAMED_IAM", 
+                        "TemplatePath": { "Fn::Sub": "BuildOutput::template.json" },
+                        "TemplateConfigurationPath": { "Fn::Sub": "BuildOutput::params.json" }
+                      },
+                      "RunOrder":1
+                    }
+                  ]
+                }
+            ],
+            "ArtifactStore":{
+              "Type":"S3",
+              "Location": { "Ref": "Bucket" }
+          }
+        }
+
+      }
+    }
+}
