@@ -155,6 +155,18 @@
                          "Resource": [ { "Ref": "BucketArn" }, { "Fn::Sub": "${BucketArn}/*" }  ]
                        },
                        {
+                         "Sid": "cloudformationpolicy",
+                         "Effect": "Allow",
+                         "Action": [
+                           "cloudformation:Get*",
+                           "cloudformation:Describe*",
+                           "cloudformation:Create*",
+                           "cloudformation:Update*",
+                           "cloudformation:Validate*"
+                         ],
+                         "Resource": [ "*" ]
+                       },
+                       {
                        "Action": [
                            "ecr:GetAuthorizationToken",
                            "sts:GetCallerIdentity"
