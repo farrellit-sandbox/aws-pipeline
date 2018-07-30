@@ -82,7 +82,7 @@
                 "  - docker tag $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION $TargetRepo:${GithubBranch}",
                 "  - docker push $TargetRepo:${GithubBranch}",
                 "# we know the template and parameters we want to build, but can only pass it back within the artifact",
-                "  - aws s3 cp $FileLocation ./template.json",
+                "  - aws s3 cp `echo $FileLocation |  sed -e 's|https://s3.*.amazonaws.com/|s3://|g'` ./template.json",
                  {"Fn::Join": [ "", [ 
                 "  - python -c \"",
                   "import json,sys; sys.stderr.write(json.dumps(dict(",
