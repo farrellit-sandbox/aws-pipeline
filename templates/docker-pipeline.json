@@ -41,7 +41,6 @@
              "ComputeType": { "Ref":"ComputeType" },
              "Image": { "Ref": "BuildImage" },
              "EnvironmentVariables": [ 
-               { "Name": "BUCKET", "Type": "PLAINTEXT", "Value": { "Ref": "Bucket" } },
                { "Name": "TargetRepo", "Type": "PLAINTEXT", "Value": { "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryName}" } },
                { "Name": "SourceRepository", "Type": "PLAINTEXT", "Value": { "Ref": "SourceRepository" } },
                { "Name": "DockerDir", "Type": "PLAINTEXT", "Value": { "Ref": "DockerDir" } },
@@ -57,8 +56,6 @@
                { "Name": "ImageId", "Value": { "Ref": "ImageId" }, "Type": "PLAINTEXT" },
                { "Name": "DockerExtra", "Value": { "Ref": "DockerExtra" }, "Type": "PLAINTEXT" },
                { "Name": "DockerPort", "Value": { "Ref": "DockerPort" }, "Type": "PLAINTEXT" },
-               { "Name": "DockerFile", "Value": { "Ref": "DockerFile" }, "Type": "PLAINTEXT" },
-               { "Name": "DockerDir", "Value": { "Ref": "DockerDir" }, "Type": "PLAINTEXT" },
                { "Name": "LogGroupArn", "Value": { "Ref": "LogGroupArn" }, "Type": "PLAINTEXT" },
                { "Name": "LogGroupName", "Value": { "Ref": "LogGroupName" }, "Type": "PLAINTEXT" },
                { "Name": "TargetGroupArns", "Value": { "Ref": "TargetGroupArns" }, "Type": "PLAINTEXT" },
