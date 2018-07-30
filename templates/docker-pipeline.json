@@ -85,7 +85,7 @@
                 "  - aws s3 cp `echo $FileLocation |  sed -e 's|https://s3.*.amazonaws.com/|s3://|g'` ./template.json",
                  {"Fn::Join": [ "", [ 
                 "  - python -c \"",
-                  "import json,sys; sys.stderr.write(json.dumps(dict(",
+                  "import json,sys; sys.stdout.write(json.dumps(dict(",
                   "RepositoryName='$RepositoryName',",
                   "ApplicationName='$ApplicationName',",
                   "AppSubnets='$AppSubnets',",
