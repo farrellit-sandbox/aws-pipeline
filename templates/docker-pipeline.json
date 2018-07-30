@@ -80,8 +80,7 @@
                 "  - docker push $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION",  
                 "  - docker tag $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION $TargetRepo:${GithubBranch}",
                 "  - docker push $TargetRepo:${GithubBranch}",
-                "  - aws ssm put-parameter --name ${ParameterName} --type String --value $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION --overwrite ",
-                "# we know the template we want to build, but can only pass it back in the artifact",
+                "# we know the template and parameters we want to build, but can only pass it back within the artifact",
                 "  - aws s3 cp $FileLocation ./template.json",
                  {"Fn::Join": [ "", [ 
                 "  - python -c \"",
