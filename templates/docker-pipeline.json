@@ -149,6 +149,7 @@
                          "Action": [
                            "s3:Get*",
                            "s3:Describe*",
+                           "s3:Put*",
                            "s3:List*"
                          ],
                          "Resource": [ { "Ref": "BucketArn" }, { "Fn::Sub": "${BucketArn}/*" }  ]
