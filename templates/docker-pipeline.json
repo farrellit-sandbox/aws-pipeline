@@ -93,6 +93,7 @@
                   "KeyName='$KeyName',",
                   "ImageId='$ImageId',",
                   "DockerExtra='$DockerExtra',",
+                  "DockerPort='$DockerPort',",
                   "LogGroupName='$LogGroupName',",
                   "LogGroupArn='$LogGroupArn',",
                   "TargetGroupArns='$TargetGroupArns',",
