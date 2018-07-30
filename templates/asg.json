@@ -57,7 +57,7 @@
                         "AlarmNotification",
                         "ScheduledActions"
                     ],
-                    "WaitOnResourceSignals": { "Fn::If": ["NullTag", false, true ] }
+                    "WaitOnResourceSignals": "false"
                 }
             }
         },
