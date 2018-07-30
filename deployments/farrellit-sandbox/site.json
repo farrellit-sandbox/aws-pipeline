@@ -88,8 +88,8 @@
           "GithubBranch": "master",
           "VpcId": { "Fn::GetAtt": [ "Vpc", "Outputs.VpcId" ] },
           "DelegationZone": "sandbox.farrellit.net.",
-          "BucketArn": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}:BucketArn" } },
-          "Bucket": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}:Bucket" } } 
+          "BucketArn": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}-Pipeline:BucketArn" } },
+          "Bucket": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}-Pipeline:Bucket" } } 
         }
       }
     }
