@@ -91,6 +91,7 @@
           "SourceRepository": {"Ref": "SourceRepository" },
           "RepositoryName": { "Ref": "ImageRepo" },
           "ApplicationName": { "Ref": "ApplicationName" },
+          "FileLocation": "file://templates//asg.json",
           "AppSubnets": { "Ref": "AppSubnets" },
           "Environment": { "Ref": "Environment" },
           "KeyName": { "Ref": "KeyName" },

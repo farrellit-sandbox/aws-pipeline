@@ -22,7 +22,8 @@
     "TargetGroupArns": { "Type": "String" },
     "TargetSecurityGroup": { "Type": "String" },
     "Bucket": { "Type": "String" },
-    "BucketArn": { "Type": "String" }
+    "BucketArn": { "Type": "String" },
+    "FileLocation": { "Type": "String", "Description": "s3 location where the stcak file is"} 
   },
   "Conditions": {
     "HasSourceRepository": { "Fn::Not": [ { "Fn::Equals": [ {"Ref":"SourceRepository"}, "" ] } ] }
@@ -46,7 +47,7 @@
                { "Name": "DockerDir", "Type": "PLAINTEXT", "Value": { "Ref": "DockerDir" } },
                { "Name": "DockerFile", "Type": "PLAINTEXT", "Value": { "Ref": "DockerFile" } },
                { "Name": "GithubBranch", "Type": "PLAINTEXT", "Value": { "Ref": "GithubBranch" } },
-               { "Name": "FileLocation", "Type": "PLAINTEXT", "Value": "file://templates/asg.json" }, 
+               { "Name": "FileLocation", "Type": "PLAINTEXT", "Value": { "Ref": "FileLocation" } }, 
 
                { "Name": "RepositoryName", "Value": { "Ref": "RepositoryName" }, "Type": "PLAINTEXT" },
                { "Name": "ApplicationName", "Value": { "Ref": "ApplicationName" }, "Type": "PLAINTEXT" },
