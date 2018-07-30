@@ -155,6 +155,26 @@
                          "Resource": [ { "Ref": "BucketArn" }, { "Fn::Sub": "${BucketArn}/*" }  ]
                        },
                        {
+                       "Action": [
+                           "ecr:GetAuthorizationToken",
+                           "sts:GetCallerIdentity"
+                         ],
+                         "Effect": "Allow",
+                         "Resource": "*"
+                       },
+                       {
+                         "NotAction": [
+                           "ecr:Delete*",
+                           "ecr:PutLife*",
+                           "ecr:SetLife*"
+                         ],
+                         "Effect": "Allow",
+                         "Resource": [ 
+                           { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${RepositoryName}" },
+                           { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${RepositoryName}:*" } 
+                         ]
+                       },
+                       {
                            "Effect"   : "Allow",
                            "Action"   : [
                             "iam:PassRole",
