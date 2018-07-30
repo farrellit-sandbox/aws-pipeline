@@ -33,7 +33,7 @@
                 "Cooldown": "90",
                 "DesiredCapacity": "1",
                 "HealthCheckGracePeriod": "180",
-                "HealthCheckType": "EC2",
+                "HealthCheckType": "ELB",
                 "LaunchConfigurationName": { "Ref": "LaunchConfig" },
                 "MaxSize": "2",
                 "MinSize": "1",
@@ -57,7 +57,7 @@
                         "AlarmNotification",
                         "ScheduledActions"
                     ],
-                    "WaitOnResourceSignals": "false"
+                    "WaitOnResourceSignals": "true"
                 }
             }
         },
