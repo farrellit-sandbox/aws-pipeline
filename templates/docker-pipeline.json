@@ -1,7 +1,6 @@
 {
   "Parameters" : {
     "GitHubOAUTHToken": { "Type": "AWS::SSM::Parameter::Value<String>" , "Default": "/deployment/github/oauth", "NoEcho": "true" },
-    "ProjectName": {"Type": "String", "Description": "Used for naming all the various parts" },
     "GithubOwner":  { "Type": "String", "Description": "Github user or org" },
     "GithubRepo":  { "Type": "String", "Description": "Github repo name" },
     "GithubBranch":  { "Type": "String", "Description": "Github branch name which autodeploys here ... would like to add gated, remote prod deploy with template diff and exec set" },
@@ -32,7 +31,7 @@
        "CodeBuildProject": {
          "Type": "AWS::CodeBuild::Project",
          "Properties": {
-           "Name": { "Ref": "ProjectName" }, 
+           "Name": { "Fn::Sub": "${Environment}-${ApplicationName}-docker" },
            "ServiceRole": { "Fn::GetAtt": [ "DockerBuildRole", "Arn" ] },
            "Artifacts": {
              "Type": "CODEPIPELINE"
@@ -112,7 +111,6 @@
            },
            "TimeoutInMinutes": 10,
            "Tags" : [
-            { "Key": "project", "Value": { "Ref": "ProjectName" } },
             { "Key": "environment", "Value": { "Ref": "Environment" } },
             { "Key": "app", "Value": { "Ref": "ApplicationName" } }
            ]
@@ -225,7 +223,7 @@
       "DockerPipeline":{
         "Type":"AWS::CodePipeline::Pipeline",
         "Properties":{
-          "Name": { "Fn::Sub": "${ProjectName}-docker-pipeline" },
+          "Name": { "Fn::Sub": "${Environment}-${ApplicationName}-pipeline" },
           "RoleArn": {"Fn::GetAtt" : [ "DockerBuildRole", "Arn" ] },
             "Stages":[
               {
@@ -263,12 +261,12 @@
                   "Name":"Deploy",
                   "Actions":[
                     {
-                      "Name": { "Fn::Sub": "${ProjectName}CloudFormationDeploy" },
+                      "Name": { "Fn::Sub": "${Environment}-${ApplicationName}-${GithubBranch}-asg-deploy" },
                       "InputArtifacts":[ { "Name":"BuildOutput" }, { "Name":"GithubArtifact" } ],
                       "ActionTypeId":{ "Category":"Deploy", "Owner":"AWS", "Version":"1", "Provider":"CloudFormation" },
                       "OutputArtifacts":[],
                       "Configuration":{
-                        "StackName": { "Ref": "ProjectName" },
+                        "StackName": { "Fn::Sub": "${Environment}-${ApplicationName}-${GithubBranch}-asg" },
                         "ActionMode": "CREATE_UPDATE",
                         "RoleArn": { "Fn::GetAtt": [ "DeployRole", "Arn" ] },
                         "Capabilities":"CAPABILITY_NAMED_IAM", 

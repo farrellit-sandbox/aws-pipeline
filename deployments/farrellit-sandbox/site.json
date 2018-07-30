@@ -87,7 +87,9 @@
           "GithubRepo": "demo-docker-app",
           "GithubBranch": "master",
           "VpcId": { "Fn::GetAtt": [ "Vpc", "Outputs.VpcId" ] },
-          "DelegationZone": "sandbox.farrellit.net."
+          "DelegationZone": "sandbox.farrellit.net.",
+          "BucketArn": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}:BucketArn" } },
+          "Bucket": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}:Bucket" } } 
         }
       }
     }

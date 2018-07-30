@@ -85,7 +85,6 @@
       "Properties": { 
         "TemplateURL": "file://templates/docker-pipeline.json",
         "Parameters": {
-          "ProjectName": { "Fn::Sub": "${ApplicationGroup}-${ApplicationName}" },
           "GithubOwner": {  "Ref": "GithubOwner" },
           "GithubRepo": { "Ref": "GithubRepo" },
           "GithubBranch": { "Ref": "GithubBranch" },
