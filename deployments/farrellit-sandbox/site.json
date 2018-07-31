@@ -1,5 +1,5 @@
 { 
-  "Description": "Want to add a site level ASG hosted zone that I can share across the site, then make imbedded ones optional", 
+  "Description": "Farrellit Sandbox Environment",
   "Parameters": {
     "VpcCidrBlock": { "Type": "String" },
     "Zone1ExternalCidr": { "Type": "String" },
@@ -22,7 +22,9 @@
     "Zone6AZ": { "Type": "String" },
     "NetworkName": { "Type": "String" }, 
     "Environment": { "Type": "String" },
-    "Production": { "Type": "String", "Default": "False" }
+    "Production": { "Type": "String", "Default": "False" },
+    "SourceRepository": { "Type": "String", "Default": "" },
+    "SingletonRegion": {"Type": "String", "Default": "us-east-2" }
   },
   "Conditions": {
     "IncludeDebug": { "Fn::Equals": [ "False", "True" ] },
@@ -63,7 +65,10 @@
     "Iam": { 
       "Type": "AWS::CloudFormation::Stack", 
       "Properties": { 
-        "TemplateURL": "file://templates/iam.json"
+        "TemplateURL": "file://templates/iam.json",
+        "Parameters": {
+          "SingletonRegion": { "Ref": "SingletonRegion" }
+        }
       }
     },
     "DemoApp": {
@@ -80,12 +85,13 @@
           "AppValidationDomain": "farrellit.net", 
           "Environment": { "Fn::Sub": "${Environment}" },
           "ApplicationGroup": "farrellit-demo",
+          "SourceRepository": { "Ref": "SourceRepository" },
           "AppSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
           "LoadBalancerSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
           "ImageId": "ami-8c122be9",
           "GithubOwner": "farrellit-sandbox",
           "GithubRepo": "demo-docker-app",
-          "GithubBranch": "master",
+          "GithubBranch": { "Fn::If": [ "IsProduction", "release", "master" ] },
           "VpcId": { "Fn::GetAtt": [ "Vpc", "Outputs.VpcId" ] },
           "DelegationZone": "sandbox.farrellit.net.",
           "BucketArn": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}-Pipeline:BucketArn" } },

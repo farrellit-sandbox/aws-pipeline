@@ -1,0 +1,11 @@
+{ 
+  "Parameters": {
+    "ProjectName": "farrellit-sandbox-qa", 
+    "SiteTemplate": "deployments/farrellit-sandbox/site.json",
+    "SiteConfigurationPath": "deployments/farrellit-sandbox/qa.json",
+    "PipelineTemplateConfigurationPath": "deployments/farrellit-sandbox/qa-pipeline.json",
+    "GithubOwner": "farrellit-sandbox",
+    "GithubRepo": "aws-pipeline",
+    "GithubBranch": "master"
+  }
+}

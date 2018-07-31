@@ -1,0 +1,28 @@
+{ 
+  "Parameters": { 
+    "VpcCidrBlock": "10.132.0.0/20",
+    "Zone1ExternalCidr": "10.132.0.0/25",
+    "Zone1InternalCidr": "10.132.4.0/23",
+    "Zone1AZ": "a",
+    "Zone2ExternalCidr": "10.132.0.132/25",
+    "Zone2InternalCidr": "10.132.6.0/23",
+    "Zone2AZ": "b",
+    "Zone3ExternalCidr": "10.132.1.0/25",
+    "Zone3InternalCidr": "10.132.8.0/23",
+    "Zone3AZ": "c",
+    "Zone4ExternalCidr": "10.132.1.132/25",
+    "Zone4InternalCidr": "10.132.10.0/23",
+    "Zone4AZ": "",
+    "Zone5ExternalCidr": "10.132.2.0/25",
+    "Zone5InternalCidr": "10.132.12.0/23",
+    "Zone5AZ": "",
+    "Zone6ExternalCidr": "10.132.2.132/25",
+    "Zone6InternalCidr": "10.132.14.0/23",
+    "Zone6AZ": "",
+    "NetworkName": "farrellit-sandbox", 
+    "Environment": "qa",
+    "Production": "False",
+    "SourceRepository": "142165916501.dkr.ecr.us-east-2.amazonaws.com/farrellit-demo/webapp",
+    "SingletonRegion": "us-west-2"
+  }
+}
