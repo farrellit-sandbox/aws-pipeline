@@ -24,6 +24,7 @@
     "Environment": { "Type": "String" },
     "Production": { "Type": "String", "Default": "False" },
     "SourceRepository": { "Type": "String", "Default": "" },
+    "SourceRepositoryArn": { "Type": "String", "Default": "" },
     "SingletonRegion": {"Type": "String", "Default": "us-east-2" }
   },
   "Conditions": {
@@ -86,6 +87,7 @@
           "Environment": { "Fn::Sub": "${Environment}" },
           "ApplicationGroup": "farrellit-demo",
           "SourceRepository": { "Ref": "SourceRepository" },
+          "SourceRepositoryArn": { "Ref": "SourceRepositoryArn" },
           "AppSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
           "LoadBalancerSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
           "ImageId": "ami-8c122be9",
