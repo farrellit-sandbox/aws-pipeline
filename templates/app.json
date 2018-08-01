@@ -68,6 +68,7 @@
           "GithubRepo": { "Ref": "GithubRepo" },
           "GithubBranch": { "Ref": "GithubBranch" },
           "SourceRepository": {"Ref": "SourceRepository" },
+          "SourceRepositoryArn": {"Ref": "SourceRepositoryArn" },
           "RepositoryName": { "Ref": "ImageRepo" },
           "ApplicationName": { "Ref": "ApplicationName" },
           "FileLocation": "file://templates//asg.json",
