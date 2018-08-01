@@ -59,49 +59,6 @@
         ] }
       }
     },
-    "ApplicationBuildPolicy": {
-      "Type" : "AWS::IAM::ManagedPolicy",
-      "Properties" : {
-        "Description" : "Access the repositories",
-        "Path" : "/build/docker/",
-        "PolicyDocument" :   {
-          "Version":"2012-10-17", 
-          "Statement" : [
-            {
-              "Action": [ "ecr:GetAuthorizationToken" ],
-              "Effect": "Allow",
-              "Resource": "*"
-            },
-            {
-              "Action": [ "ssm:PutParameter" ],
-              "Effect": "Allow",
-              "Resource": [ { "Fn::Sub": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/build/github/${GithubOwner}/${GithubRepo}/${GithubBranch}/latest-build" } ]
-            },
-            {
-              "NotAction": [
-                "ecr:Delete*",
-                "ecr:Put*Policy",
-                "ecr:Set*Policy"
-              ],
-              "Effect": "Allow",
-              "Resource": [ { "Fn::Sub": "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ImageRepo}" } ] 
-            },
-            { "Fn::If": [ "HasSourceRepository", 
-             {
-              "Action": [
-                "ecr:BatchCheckLayerAvailability",
-                "ecr:BatchGetImage",
-                "ecr:GetDownloadUrlForLayer"
-              ],
-              "Effect": "Allow",
-              "Resource":  { "Ref": "SourceRepositoryArn" }
-             },
-             { "Ref": "AWS::NoValue" }
-            ] }
-          ]
-        }
-      }
-    },
     "DockerPipeline": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": { 

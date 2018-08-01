@@ -7,6 +7,7 @@
     "BuildImage": { "Type": "String", "Default": "aws/codebuild/docker:17.09.0" },
     "ComputeType": { "Type": "String", "Default": "BUILD_GENERAL1_SMALL" },
     "SourceRepository": { "Type": "String", "Default": "" },
+    "SourceRepositoryArn": { "Type": "String", "Default": "" },
     "RepositoryName": { "Type": "String" },
     "ApplicationName": { "Type": "String" },
     "AppSubnets": { "Type": "String" }, 
@@ -194,7 +195,19 @@
                             "iam:GetRole*"
                           ],
                           "Resource" : { "Fn::GetAtt": [ "DeployRole", "Arn" ] }
-                       }
+                       },
+                       { "Fn::If": [ "HasSourceRepository", 
+                        {
+                          "Action": [
+                            "ecr:BatchCheckLayerAvailability",
+                            "ecr:BatchGetImage",
+                            "ecr:GetDownloadUrlForLayer"
+                          ],
+                          "Effect": "Allow",
+                          "Resource":  { "Ref": "SourceRepositoryArn" }
+                        },
+                        { "Ref": "AWS::NoValue" }
+                       ] }
                      ]
                    }
                  }
