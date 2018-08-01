@@ -71,6 +71,7 @@
                 "phases:",
                 " build:",
                 "  commands:",
+                "  - env",
                 "  - aws ecr get-login  --no-include-email | sh" , 
                 { "Fn::If": [ "HasSourceRepository", 
                   { "Fn::Join": [ "\n", [
