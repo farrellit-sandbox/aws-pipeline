@@ -73,7 +73,10 @@
                 "  commands:",
                 { "Fn::If": [ "HasSourceRepository", 
                   { "Fn::Join": [ "\n", [
-                    "  - aws ecr get-login --region `echo $SourceRepository | sed 's/.*[.]ecr[.]\\([^.]*\\)[.].*/\\1/'` --no-include-email | sh" , 
+                    "  - set -x",
+                    "  - region=`echo $SourceRepository | sed 's/.*[.]ecr[.]\\([^.]*\\)[.].*/\\1/'`",
+                    "  - echo $region",
+                    "  - aws ecr get-login --region $region  --no-include-email | sh" , 
                     "  - docker pull $SourceRepository:$CODEBUILD_RESOLVED_SOURCE_VERSION",
                     "  - docker tag  ${SourceRepository}:$CODEBUILD_RESOLVED_SOURCE_VERSION $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION"
                   ] ] }, 
