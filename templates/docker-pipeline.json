@@ -76,7 +76,7 @@
                     "  - set -x",
                     "  - region=`echo $SourceRepository | sed 's/.*[.]ecr[.]\\([^.]*\\)[.].*/\\1/'`",
                     "  - echo $region",
-                    "  - aws ecr get-login --region $region  --no-include-email | sh" , 
+                    "  - aws ecr get-login --region $region  --no-include-email | sed -e 's|https://||' | sh" , 
                     "  - docker pull $SourceRepository:$CODEBUILD_RESOLVED_SOURCE_VERSION",
                     "  - docker tag  ${SourceRepository}:$CODEBUILD_RESOLVED_SOURCE_VERSION $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION"
                   ] ] }, 
