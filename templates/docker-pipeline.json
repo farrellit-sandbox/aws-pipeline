@@ -71,14 +71,15 @@
                 "phases:",
                 " install:",
                 "  commands:",
-                "  - aws ecr get-login --no-include-email | sh" , 
                 { "Fn::If": [ "HasSourceRepository", 
                   { "Fn::Join": [ "\n", [
+                    "  - aws ecr get-login --region `echo $SourceRepository | sed 's/.*[.]ecr[.]\\([^.]*\\)[.].*/\\1/'` --no-include-email | sh" , 
                     "  - docker pull $SourceRepository:$CODEBUILD_RESOLVED_SOURCE_VERSION",
                     "  - docker tag  ${SourceRepository}:$CODEBUILD_RESOLVED_SOURCE_VERSION $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION"
                   ] ] }, 
                   "  - docker build -t $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION -f ${DockerFile} ${DockerDir}"
                 ] },
+                "  - aws ecr get-login --no-include-email | sh" , 
                 "  - docker push $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION",  
                 "  - docker tag $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION $TargetRepo:${GithubBranch}",
                 "  - docker push $TargetRepo:${GithubBranch}",
