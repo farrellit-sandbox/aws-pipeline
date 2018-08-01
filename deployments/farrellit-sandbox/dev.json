@@ -21,6 +21,7 @@
     "Zone6AZ": "",
     "NetworkName": "farrellit-sandbox", 
     "Environment": "dev",
-    "Production": "False"
+    "Production": "False",
+    "DelegationZone": "sandbox.farrellit.net."
   }
 }

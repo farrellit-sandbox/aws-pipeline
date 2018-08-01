@@ -25,7 +25,8 @@
     "Production": { "Type": "String", "Default": "False" },
     "SourceRepository": { "Type": "String", "Default": "" },
     "SourceRepositoryArn": { "Type": "String", "Default": "" },
-    "SingletonRegion": {"Type": "String", "Default": "us-east-2" }
+    "SingletonRegion": {"Type": "String", "Default": "us-east-2" },
+    "DelegationZone": { "Type": "String", "Default": "" }
   },
   "Conditions": {
     "IncludeDebug": { "Fn::Equals": [ "False", "True" ] },
@@ -95,7 +96,7 @@
           "GithubRepo": "demo-docker-app",
           "GithubBranch": { "Fn::If": [ "IsProduction", "release", "master" ] },
           "VpcId": { "Fn::GetAtt": [ "Vpc", "Outputs.VpcId" ] },
-          "DelegationZone": "sandbox.farrellit.net.",
+          "DelegationZone": {"Ref": "DelegationZone" },
           "BucketArn": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}-Pipeline:BucketArn" } },
           "Bucket": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}-Pipeline:Bucket" } } 
         }
