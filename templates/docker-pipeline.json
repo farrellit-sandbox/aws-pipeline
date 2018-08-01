@@ -69,16 +69,13 @@
              "BuildSpec": { "Fn::Join": [ "\n", [
                 "version: 0.2",
                 "phases:",
-                " install:",
+                " build:",
                 "  commands:",
+                "  - aws ecr get-login  --no-include-email | sh" , 
                 { "Fn::If": [ "HasSourceRepository", 
                   { "Fn::Join": [ "\n", [
-                    "  - set -x",
-                    "  - region=`echo $SourceRepository | sed 's/.*[.]ecr[.]\\([^.]*\\)[.].*/\\1/'`",
-                    "  - echo $region",
-                    "  - aws ecr get-login --region $region  --no-include-email | sed -e 's|https://||' | sh" , 
-                    "  - docker pull $SourceRepository:$CODEBUILD_RESOLVED_SOURCE_VERSION",
-                    "  - docker tag  ${SourceRepository}:$CODEBUILD_RESOLVED_SOURCE_VERSION $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION"
+                    "  - docker pull ${SourceRepository}:${CODEBUILD_RESOLVED_SOURCE_VERSION} ",
+                    "  - docker tag  ${SourceRepository}:${CODEBUILD_RESOLVED_SOURCE_VERSION} $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION"
                   ] ] }, 
                   "  - docker build -t $TargetRepo:$CODEBUILD_RESOLVED_SOURCE_VERSION -f ${DockerFile} ${DockerDir}"
                 ] },
