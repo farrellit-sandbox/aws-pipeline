@@ -3,7 +3,7 @@ lightweight cloudformation AWS all-inclusive infrastructure CI pipeline
 
 # Introduction
 
-2 things: 
+2 things are provided here 
   
   1. cloudformation template library
   2. self-updating codepipeline template and bootstrapping process
@@ -28,19 +28,19 @@ lightweight cloudformation AWS all-inclusive infrastructure CI pipeline
   task.  each file is sha256 hashed after being "json normalized", then uploaded to s3 and the reference in the other templates is updated from file:// to 
   http://s3.amazonaws....  The final stack entrypoint is then shipped back in the form of a build artifact component.  
 
-  The rest of those files support those tests
+  The rest of those files support those tests.  
+  
 <dd>
 </dl>
-# CI Pipeline
+
+# Infrastructure CI Pipeline
 
 
 ## general notes:
 - the pipeline itself must also be CI'd for this to work.  That's why the main pipeline deploys itself before it deploys the stack entrypoint.  
-  that doesn't preclude other pipeline deploys ( at this time the self-deployer may not be optional but it could be omitted in the same template )
-  Other pipelines would be included here and updated if this changed ( what you want for infrastructure as code ), but would assumedly point to 
-  different repos and wouldn't self-deploy their pipelines.  
+- Other pipelines are included here and updated if this changed but point to different repos for auto deploy
 
-## Process
+## Processes
 
 ### First time setup
 
@@ -54,10 +54,3 @@ nothing can bootstrap itself of course; not quite.  So `bootstrap.sh` exists to 
     in turn then creates the main stack (see below)
 
 TODO: this should maybe actually invoke `publish_templates.py` in dryrun to validate all the templates you select!
-
-### CI Auto-Process
-
-This is what happens when the pipeline stack runs.  It also runs when its created for the first time (doesn't it?).  
-
-1. github push is done by a developer
-2. 
