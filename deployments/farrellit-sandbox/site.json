@@ -102,7 +102,7 @@
           "ApplicationGroup": "farrellit-demo",
           "SourceRepository": { "Ref": "SourceRepository" },
           "SourceRepositoryArn": { "Ref": "SourceRepositoryArn" },
-          "AppSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
+          "AppSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.InternalSubnets" ] },
           "LoadBalancerSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
           "ImageId": { "Fn::FindInMap": [ "RegionalSettings", { "Ref":"AWS::Region"}, "image" ] },
           "GithubOwner": "farrellit-sandbox",
