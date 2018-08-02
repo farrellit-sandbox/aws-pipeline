@@ -76,6 +76,7 @@
                 "  commands:",
                 "  - env",
                 "  - aws ecr get-login  --no-include-email --registry-ids ${UpstreamAccount} ${AWSAccountId} | sh" , 
+                "  - aws ecr get-login  --region ${UpstreamRegion:-us-east-2} --no-include-email --registry-ids ${UpstreamAccount} ${AWSAccountId} | sh" , 
                 { "Fn::If": [ "HasSourceRepository", 
                   { "Fn::Join": [ "\n", [
                     "  - docker pull ${SourceRepository}:${CODEBUILD_RESOLVED_SOURCE_VERSION} ",
