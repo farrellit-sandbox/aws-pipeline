@@ -27,6 +27,7 @@
     "UpstreamAccount": "142165916501",
     "UpstreamRegion": "us-east-2",
     "SingletonRegion": "us-west-2",
+    "DownstreamAccount":"254700671561", 
     "DelegationZone": ""
   }
 }
