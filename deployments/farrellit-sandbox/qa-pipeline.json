@@ -6,6 +6,6 @@
     "PipelineTemplateConfigurationPath": "deployments/farrellit-sandbox/qa-pipeline.json",
     "GithubOwner": "farrellit-sandbox",
     "GithubRepo": "aws-pipeline",
-    "GithubBranch": "master"
+    "GithubBranch": "prerelease"
   }
 }
