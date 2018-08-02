@@ -35,6 +35,16 @@
     "OmitEnvironmentInDomain": { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] },
     "IsProduction": { "Fn::Equals": [ {"Ref":"Production"}, "True" ] }
   },
+  "Mappings": {
+    "RegionalValues": {
+      "us-east-2": { 
+        "image": "ami-8c122be9"
+      },
+      "us-west-2": {
+        "image": "ami-a9d09ed1" 
+      }  
+    }
+  },
   "Resources": { 
     "Vpc": {
       "Type": "AWS::CloudFormation::Stack", 
@@ -93,7 +103,7 @@
           "SourceRepositoryArn": { "Ref": "SourceRepositoryArn" },
           "AppSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
           "LoadBalancerSubnets": { "Fn::GetAtt": [ "Vpc", "Outputs.ExternalSubnets" ] },
-          "ImageId": "ami-8c122be9",
+          "ImageId": { "Fn::FindInMap": [ "RegionalSettings", { "Ref":"AWS::Region"}, "image" ] },
           "GithubOwner": "farrellit-sandbox",
           "GithubRepo": "demo-docker-app",
           "GithubBranch": { "Fn::If": [ "IsProduction", "release", "master" ] },
