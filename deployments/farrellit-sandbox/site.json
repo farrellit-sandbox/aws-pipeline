@@ -36,7 +36,7 @@
     "IsProduction": { "Fn::Equals": [ {"Ref":"Production"}, "True" ] }
   },
   "Mappings": {
-    "RegionalValues": {
+    "RegionalSettings": {
       "us-east-2": { 
         "image": "ami-8c122be9"
       },
