@@ -27,7 +27,8 @@
     "SourceRepositoryArn": { "Type": "String", "Default": "" },
     "SingletonRegion": {"Type": "String", "Default": "us-east-2" },
     "DelegationZone": { "Type": "String", "Default": "" },
-    "UpstreamAccount": { "Type": "String", "Default": "", "Description": "Will  be granted access to pull the ecr repo" }
+    "UpstreamAccount": { "Type": "String", "Default": "", "Description": "will be used to authorize to pull upstream ecr repo" },
+    "DownstreamAccount": { "Type": "String", "Default": "", "Description": "Will  be granted access to pull the ecr repo" }
   },
   "Conditions": {
     "IncludeDebug": { "Fn::Equals": [ "False", "True" ] },
@@ -100,7 +101,8 @@
           "DelegationZone": {"Ref": "DelegationZone" },
           "BucketArn": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}-Pipeline:BucketArn" } },
           "Bucket": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}-Pipeline:Bucket" } },
-          "UpstreamAccount": {"Ref":"UpstreamAccount" }
+          "UpstreamAccount": {"Ref":"UpstreamAccount" },
+          "DownstreamAccount": {"Ref":"DownstreamAccount" }
         }
       }
     }

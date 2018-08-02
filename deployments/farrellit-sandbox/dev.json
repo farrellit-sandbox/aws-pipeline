@@ -23,6 +23,6 @@
     "Environment": "dev",
     "Production": "False",
     "DelegationZone": "sandbox.farrellit.net.",
-    "UpstreamAccount": "446558427838"
+    "DownstreamAccount": "446558427838"
   }
 }

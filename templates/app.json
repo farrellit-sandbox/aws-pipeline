@@ -24,20 +24,22 @@
     "KeyName": {"Type": "String", "Default": "" },
     "Bucket": { "Type": "String", "Description": "where to retrieve artifacts from this stack buld, from the top level pipeline" },
     "BucketArn": { "Type": "String", "Description": "arn of bucket" },
-    "UpstreamAccount":  {"Type":"String", "Description": "account id to grant upstream access to repo", "Default": "" }
+    "DownstreamAccount":  {"Type":"String", "Description": "account id to grant pull access to repo", "Default": "" },
+    "UpstreamAccount":  {"Type":"String", "Description": "source account id to include in login requests", "Default": "" }
   },
   "Conditions": {
     "Debug": { "Fn::Equals": [ "True", "False" ] },
     "UseRepositoryName": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "RepositoryName" }, "" ] } ] },
     "HasSourceRepository": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "SourceRepository" }, "" ] } ] },
-    "UpstreamAccount": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "UpstreamAccount" }, "" ] } ] }
+    "UpstreamAccount": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "UpstreamAccount" }, "" ] } ] },
+    "DownstreamAccount": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "DownstreamAccount" }, "" ] } ] }
   },
   "Resources": {
     "ImageRepo": {
       "Type": "AWS::ECR::Repository",
       "Properties": {
         "RepositoryName": { "Fn::If": [ "UseRepositoryName", { "Ref": "RepositoryName" }, { "Fn::Sub": "${ApplicationGroup}/${ApplicationName}" } ]  },
-        "RepositoryPolicyText":  { "Fn::If": [ "UpstreamAccount", 
+        "RepositoryPolicyText":  { "Fn::If": [ "DownstreamAccount", 
           {
             "Version": "2008-10-17",
             "Statement": [
@@ -45,7 +47,7 @@
                 "Sid": "testing",
                 "Effect": "Allow",
                 "Principal": {
-                  "AWS":  [ { "Fn::Sub": "arn:aws:iam::${UpstreamAccount}:root" } ]
+                  "AWS":  [ { "Fn::Sub": "arn:aws:iam::${DownstreamAccount}:root" } ]
                 },
                 "Action": [
                   "ecr:GetDownloadUrlForLayer",
@@ -83,7 +85,7 @@
           "TargetGroupArns": { "Fn::GetAtt": [ "ALB", "Outputs.TargetGroupArn" ] },
           "Bucket": {"Ref": "Bucket" },
           "BucketArn": {"Ref": "BucketArn" },
-          "UpstreamAccount": { "Ref": "UpstreamAccount" }
+          "DownstreamAccount": { "Ref": "DownstreamAccount" }
         }
       }
     },
