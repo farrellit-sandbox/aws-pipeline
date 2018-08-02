@@ -123,6 +123,70 @@
            ]
          }
        },
+       "PipelineRole": {
+             "Type": "AWS::IAM::Role",
+             "Properties": {
+               "Path": "/devops/delivery/",
+               "AssumeRolePolicyDocument": {
+                 "Version": "2012-10-17",
+                 "Statement": [
+                   {
+                     "Effect": "Allow",
+                     "Principal": { "Service": [ "codepipeline.amazonaws.com" ] },
+                     "Action": "sts:AssumeRole"
+                   }
+                 ]
+               },
+               "Policies": [
+                 {
+                   "PolicyName": "PipelinePolicy",
+                   "PolicyDocument": {
+                     "Version": "2012-10-17",
+                     "Statement": [
+                       {
+                         "Sid": "S3GetObjectPolicy",
+                         "Effect": "Allow",
+                         "Action": [
+                           "s3:Get*",
+                           "s3:Describe*",
+                           "s3:Put*",
+                           "s3:List*"
+                         ],
+                         "Resource": [ { "Ref": "BucketArn" }, { "Fn::Sub": "${BucketArn}/*" }  ]
+                       },
+                       {
+                         "Sid": "cloudformationpolicy",
+                         "Effect": "Allow",
+                         "Action": [
+                           "cloudformation:Get*",
+                           "cloudformation:Describe*",
+                           "cloudformation:Create*",
+                           "cloudformation:Update*",
+                           "cloudformation:Delete*",
+                           "cloudformation:Validate*"
+                         ],
+                         "Resource": [ "*" ]
+                       },
+                       {
+                           "Effect"   : "Allow",
+                           "Action"   : [
+                            "iam:PassRole",
+                            "iam:GetRole*"
+                          ],
+                          "Resource" : { "Fn::GetAtt": [ "DeployRole", "Arn" ] }
+                       },
+                       {
+                          "Sid": "AllowProjectBuilds",
+                          "Effect": "Allow",
+                          "Action": [ "codebuild:*" ],
+                          "Resource": [ { "Fn::GetAtt": [ "CodeBuildProject", "Arn" ] } ]
+                        }
+                     ]
+                   }
+                 }
+               ]
+             }
+           },
        "DockerBuildRole": {
              "Type": "AWS::IAM::Role",
              "Properties": {
@@ -165,13 +229,11 @@
                          "Resource": [ { "Ref": "BucketArn" }, { "Fn::Sub": "${BucketArn}/*" }  ]
                        },
                        {
-                         "Sid": "cloudformationpolicy",
+                         "Sid": "cloudformationReadPolicy",
                          "Effect": "Allow",
                          "Action": [
                            "cloudformation:Get*",
                            "cloudformation:Describe*",
-                           "cloudformation:Create*",
-                           "cloudformation:Update*",
                            "cloudformation:Validate*"
                          ],
                          "Resource": [ "*" ]
@@ -222,24 +284,6 @@
                ]
              }
            },
-          "CodeBuildPolicy": {
-              "Type" : "AWS::IAM::Policy",
-              "Properties" : {
-              "PolicyName" : "PipelineBuild",
-              "PolicyDocument" : {
-                "Version" : "2012-10-17",
-                "Statement": [  
-                  {
-                    "Sid": "AllowProjectBuilds",
-                    "Effect": "Allow",
-                    "Action": [ "codebuild:*" ],
-                    "Resource": [ { "Fn::GetAtt": [ "CodeBuildProject", "Arn" ] } ]
-                  }
-                ]
-              },
-              "Roles" : [ { "Ref" : "DockerBuildRole" } ]
-            }
-          },
           "DeployRole": {
              "Type": "AWS::IAM::Role",
              "Properties": {
@@ -276,7 +320,7 @@
         "Type":"AWS::CodePipeline::Pipeline",
         "Properties":{
           "Name": { "Fn::Sub": "${Environment}-${ApplicationName}-pipeline" },
-          "RoleArn": {"Fn::GetAtt" : [ "DockerBuildRole", "Arn" ] },
+          "RoleArn": {"Fn::GetAtt" : [ "PipelineRole", "Arn" ] },
             "Stages":[
               {
                 "Name":"Source",
