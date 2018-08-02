@@ -30,7 +30,7 @@
   },
   "Conditions": {
     "HasSourceRepository": { "Fn::Not": [ { "Fn::Equals": [ {"Ref":"SourceRepository"}, "" ] } ] },
-    "IsProduction": { "Fn::Not": [ { "Fn::Equals": [ {"Ref":"Production"}, "True" ] } ] }
+    "IsProduction": { "Fn::Equals": [ {"Ref":"Production"}, "True" ] }
   },
   "Resources":{
        "CodeBuildProject": {
