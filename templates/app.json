@@ -82,7 +82,8 @@
           "TargetSecurityGroup": { "Fn::GetAtt": [ "ALB", "Outputs.BackendSecurityGroup" ] },
           "TargetGroupArns": { "Fn::GetAtt": [ "ALB", "Outputs.TargetGroupArn" ] },
           "Bucket": {"Ref": "Bucket" },
-          "BucketArn": {"Ref": "BucketArn" }
+          "BucketArn": {"Ref": "BucketArn" },
+          "UpstreamAccount": { "Ref": "UpstreamAccount" }
         }
       }
     },
