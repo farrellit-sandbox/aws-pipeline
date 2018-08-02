@@ -28,6 +28,7 @@
     "SingletonRegion": {"Type": "String", "Default": "us-east-2" },
     "DelegationZone": { "Type": "String", "Default": "" },
     "UpstreamAccount": { "Type": "String", "Default": "", "Description": "will be used to authorize to pull upstream ecr repo" },
+    "UpstreamRegion": { "Type": "String", "Default": "", "Description": "additional region for the auth for upstream ecr pull" },
     "DownstreamAccount": { "Type": "String", "Default": "", "Description": "Will  be granted access to pull the ecr repo" }
   },
   "Conditions": {
