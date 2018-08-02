@@ -85,7 +85,7 @@
           "TargetGroupArns": { "Fn::GetAtt": [ "ALB", "Outputs.TargetGroupArn" ] },
           "Bucket": {"Ref": "Bucket" },
           "BucketArn": {"Ref": "BucketArn" },
-          "DownstreamAccount": { "Ref": "DownstreamAccount" }
+          "UpstreamAccount": { "Ref": "UpstreamAccount" }
         }
       }
     },

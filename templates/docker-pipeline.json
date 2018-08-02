@@ -25,7 +25,7 @@
     "Bucket": { "Type": "String" },
     "BucketArn": { "Type": "String" },
     "FileLocation": { "Type": "String", "Description": "s3 location where the stcak file is"} ,
-    "DownstreamAccount": {"Type": "String", "Description": "for docker login registry ids"}
+    "UpstreamAccount": {"Type": "String", "Description": "for docker login registry ids"}
   },
   "Conditions": {
     "HasSourceRepository": { "Fn::Not": [ { "Fn::Equals": [ {"Ref":"SourceRepository"}, "" ] } ] }
@@ -63,7 +63,7 @@
                { "Name": "LogGroupName", "Value": { "Ref": "LogGroupName" }, "Type": "PLAINTEXT" },
                { "Name": "TargetGroupArns", "Value": { "Ref": "TargetGroupArns" }, "Type": "PLAINTEXT" },
                { "Name": "TargetSecurityGroup", "Value": { "Ref": "TargetSecurityGroup" }, "Type": "PLAINTEXT" },
-               { "Name": "DownstreamAccount", "Value": { "Ref": "DownstreamAccount" }, "Type": "PLAINTEXT" },
+               { "Name": "UpstreamAccount", "Value": { "Ref": "UpstreamAccount" }, "Type": "PLAINTEXT" },
                { "Name": "AWSAccountId", "Value": { "Ref": "AWS::AccountId" }, "Type": "PLAINTEXT" }
              ]
            },
@@ -75,7 +75,7 @@
                 " build:",
                 "  commands:",
                 "  - env",
-                "  - aws ecr get-login  --no-include-email --registry-ids ${DownstreamAccount} ${AWSAccountId} | sh" , 
+                "  - aws ecr get-login  --no-include-email --registry-ids ${UpstreamAccount} ${AWSAccountId} | sh" , 
                 { "Fn::If": [ "HasSourceRepository", 
                   { "Fn::Join": [ "\n", [
                     "  - docker pull ${SourceRepository}:${CODEBUILD_RESOLVED_SOURCE_VERSION} ",
@@ -94,7 +94,7 @@
                   "import json,sys; sys.stdout.write(json.dumps(dict(Parameters=dict(",
                   "RepositoryName='$RepositoryName',",
                   "ApplicationName='$ApplicationName',",
-                  "DownstreamAcount='$DownstreamAcount',",
+                  "UpstreamAcount='$UpstreamAcount',",
                   "AppSubnets='$AppSubnets',",
                   "Environment='$Environment',",
                   "KeyName='$KeyName',",
