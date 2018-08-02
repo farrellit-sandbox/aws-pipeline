@@ -112,6 +112,7 @@
           "BucketArn": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}-Pipeline:BucketArn" } },
           "Bucket": { "Fn::ImportValue": { "Fn::Sub": "farrellit-sandbox-${Environment}-Pipeline:Bucket" } },
           "UpstreamAccount": {"Ref":"UpstreamAccount" },
+          "UpstreamRegion": {"Ref":"UpstreamRegion" },
           "DownstreamAccount": {"Ref":"DownstreamAccount" }
         }
       }

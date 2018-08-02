@@ -25,6 +25,7 @@
     "SourceRepository": "142165916501.dkr.ecr.us-east-2.amazonaws.com/farrellit-demo/webapp",
     "SourceRepositoryArn": "arn:aws:ecr:us-east-2:142165916501:repository/farrellit-demo/webapp",
     "UpstreamAccount": "142165916501",
+    "UpstreamRegion": "us-east-2",
     "SingletonRegion": "us-west-2",
     "DelegationZone": ""
   }

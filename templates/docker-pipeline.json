@@ -26,6 +26,7 @@
     "BucketArn": { "Type": "String" },
     "FileLocation": { "Type": "String", "Description": "s3 location where the stcak file is"} ,
     "UpstreamAccount": {"Type": "String", "Description": "for docker login registry ids"},
+    "UpstreamRegion": {"Type": "String", "Description": "for docker login registry ids"},
     "Production": { "Type": "String", "Default": "False" }
   },
   "Conditions": {
@@ -66,6 +67,7 @@
                { "Name": "TargetGroupArns", "Value": { "Ref": "TargetGroupArns" }, "Type": "PLAINTEXT" },
                { "Name": "TargetSecurityGroup", "Value": { "Ref": "TargetSecurityGroup" }, "Type": "PLAINTEXT" },
                { "Name": "UpstreamAccount", "Value": { "Ref": "UpstreamAccount" }, "Type": "PLAINTEXT" },
+               { "Name": "UpstreamRegion", "Value": { "Ref": "UpstreamRegion" }, "Type": "PLAINTEXT" },
                { "Name": "AWSAccountId", "Value": { "Ref": "AWS::AccountId" }, "Type": "PLAINTEXT" }
              ]
            },
