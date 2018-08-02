@@ -95,7 +95,6 @@
                   "import json,sys; sys.stdout.write(json.dumps(dict(Parameters=dict(",
                   "RepositoryName='$RepositoryName',",
                   "ApplicationName='$ApplicationName',",
-                  "UpstreamAcount='$UpstreamAcount',",
                   "AppSubnets='$AppSubnets',",
                   "Environment='$Environment',",
                   "KeyName='$KeyName',",
